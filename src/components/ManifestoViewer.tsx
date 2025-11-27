@@ -12,41 +12,72 @@ export default function ManifestoViewer() {
         {
             title: "Propósito",
             icon: <Sparkles className="w-5 h-5 text-cyan-400" />,
-            content: "Vivir juntos con buena vibra, claridad desde el inicio y cero malentendidos. La idea es que el departamento sea un HOGAR funcional donde todos podamos descansar y crecer profesionalmente."
+            content: (
+                <div className="space-y-2">
+                    <p>Vivir juntos con buena vibra, claridad desde el inicio y cero malentendidos. La idea es que el departamento sea un HOGAR funcional donde todos podamos descansar y crecer profesionalmente.</p>
+                    <p className="text-sm text-gray-400">Fecha de Lanzamiento: 25 de Noviembre de 2025 (Lets gooo!!)</p>
+                    <p className="text-sm text-gray-400">Integrantes: Edgardo Montoya De Tellitu, James Thomas Kennedy y Alejandro Dorantes Andrade.</p>
+                </div>
+            )
         },
         {
-            title: "The Finance Game",
+            title: "I. The Finance Game: Renta y Billete",
             icon: <Zap className="w-5 h-5 text-yellow-400" />,
             content: (
-                <ul className="list-disc list-inside space-y-2 text-gray-300">
-                    <li><strong>Renta:</strong> Se paga a tiempo, no excuses. Día 30 deadline.</li>
-                    <li><strong>Boss del Mes:</strong> Rota cada 3 meses. Recolecta $32,000 y paga el día 1.</li>
-                    <li><strong>Regla de Oro:</strong> Pago final e irrevocable. No 'pon mi parte'.</li>
-                    <li><strong>Servicios:</strong> Se dividen entre 3 (Luz, Gas, Agua, Internet).</li>
-                    <li><strong>Caja Común:</strong> $500/mes los primeros 5 días. Intocable para insumos.</li>
-                </ul>
+                <div className="space-y-4">
+                    <p>La renta se paga a tiempo, no excuses. El cobro se hace por el 'Boss' del Mes (Responsable de Consolidación) que rota para que el karma sea parejo.</p>
+
+                    <div className="grid gap-2 text-sm bg-black/20 p-3 rounded-lg border border-white/5">
+                        <div className="flex justify-between border-b border-white/10 pb-1">
+                            <span>Edgardo (Habitación con Baño y Estudio)</span>
+                            <span className="font-mono text-cyan-400">$14,500.00</span>
+                        </div>
+                        <div className="flex justify-between border-b border-white/10 pb-1">
+                            <span>James (Habitación con Clóset)</span>
+                            <span className="font-mono text-cyan-400">$10,500.00</span>
+                        </div>
+                        <div className="flex justify-between border-b border-white/10 pb-1">
+                            <span>Alejandro (Habitación sin Clóset)</span>
+                            <span className="font-mono text-cyan-400">$7,000.00</span>
+                        </div>
+                        <div className="flex justify-between font-bold pt-1">
+                            <span>TOTAL RENTA MENSUAL</span>
+                            <span className="font-mono text-emerald-400">$32,000.00</span>
+                        </div>
+                    </div>
+
+                    <ul className="list-disc list-inside space-y-2 text-gray-300 text-sm">
+                        <li><strong>Boss del Mes:</strong> Rota cada 3 meses. Recolecta $32,000 y paga el día 1.</li>
+                        <li><strong>Deadline:</strong> El pago individual es el Día 30. Final e irrevocable.</li>
+                        <li><strong>Servicios (1/3):</strong> Luz, Gas, Agua e Internet se dividen en partes iguales.</li>
+                        <li><strong>Caja Común ($500):</strong> Primeros 5 días del mes. Intocable (Limpieza, insumos, básicos).</li>
+                    </ul>
+                </div>
             )
         },
         {
-            title: "Código de Orden",
+            title: "II. El Código de Orden y La Cocina",
             icon: <Shield className="w-5 h-5 text-purple-400" />,
             content: (
-                <ul className="list-disc list-inside space-y-2 text-gray-300">
-                    <li><strong>Limpieza:</strong> Si lo usas, lo levantas. Si lo ensucias, lo limpias.</li>
-                    <li><strong>Cocina:</strong> Trastes se lavan INMEDIATAMENTE. Cero 'dejar para después'.</li>
-                    <li><strong>Refrigerador:</strong> Comida marcada con nombre. Descarte los domingos.</li>
-                    <li><strong>Limpieza Pro:</strong> Se paga con la Caja Común.</li>
-                </ul>
+                <div className="space-y-3">
+                    <p className="italic text-gray-400">"No Seas Roomie Mamon. Si lo usas, lo levantas. Si lo ensucias, lo limpias."</p>
+                    <ul className="list-disc list-inside space-y-2 text-gray-300">
+                        <li><strong>Limpieza Pro:</strong> Semanal/Quincenal (se paga con la Caja Común).</li>
+                        <li><strong>Cuarto de Servicio:</strong> Área Chill común. No es bodega ni habitación privada.</li>
+                        <li><strong>Trastes:</strong> Se lavan INMEDIATAMENTE. Cero "dejar para después".</li>
+                        <li><strong>Refrigerador:</strong> Comida marcada con nombre. Descarte obligatorio los domingos.</li>
+                    </ul>
+                </div>
             )
         },
         {
-            title: "Cero Drama",
+            title: "III. Cómo Evitar el Drama",
             icon: <Heart className="w-5 h-5 text-pink-400" />,
             content: (
                 <ul className="list-disc list-inside space-y-2 text-gray-300">
-                    <li><strong>Comunicación Directa:</strong> Si hay problema, háblalo directo. Cero chismes.</li>
-                    <li><strong>Mediación:</strong> El tercer roomie actúa como juez neutral si es necesario.</li>
-                    <li><strong>Check-In:</strong> Revisión oficial a los 6 meses.</li>
+                    <li><strong>Regla de Oro (No Drama):</strong> Háblalo directo y pronto. Cero chismes.</li>
+                    <li><strong>Mediación Neutral:</strong> El tercero actúa como mediador si hay conflicto.</li>
+                    <li><strong>Documento Vivo:</strong> Check-In oficial a los 6 meses para ajustes.</li>
                 </ul>
             )
         }
