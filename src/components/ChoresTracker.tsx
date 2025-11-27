@@ -1,126 +1,197 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckSquare, Trash2, Utensils, Calendar, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { Trash2, CheckCircle2, Plus, AlertCircle, Utensils, Sparkles } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Chore } from "@/types";
 
 export default function ChoresTracker() {
-  const [chores, setChores] = useState<any[]>([]);
+  const [chores, setChores] = useState<Chore[]>([]);
   const [newChore, setNewChore] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchChores();
   }, []);
 
   const fetchChores = async () => {
-    const { data } = await supabase.from('chores').select('*').order('created_at', { ascending: false });
-    if (data) setChores(data);
+    try {
+      const { data, error } = await supabase.from('chores').select('*').order('created_at', { ascending: false });
+      if (data) setChores(data as Chore[]);
+    } catch (error) {
+      console.error("Error fetching chores", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addChore = async () => {
     if (!newChore.trim()) return;
-
-    const { error } = await supabase.from('chores').insert([
-      { title: newChore, assigned_to: 'all', is_completed: false }
-    ]);
-
-    if (!error) {
+    try {
+      await supabase.from('chores').insert([{ task: newChore, completed: false }]);
       setNewChore("");
       fetchChores();
+    } catch (error) {
+      alert("Error al agregar tarea");
     }
   };
 
-  const toggleChore = async (id: string, currentStatus: boolean) => {
-    await supabase.from('chores').update({ is_completed: !currentStatus }).eq('id', id);
-    fetchChores();
+  const toggleChore = async (id: number, completed: boolean) => {
+    try {
+      await supabase.from('chores').update({ completed: !completed }).eq('id', id);
+      fetchChores();
+    } catch (error) {
+      alert("Error al actualizar tarea");
+    }
+  };
+
+  const deleteChore = async (id: number) => {
+    try {
+      await supabase.from('chores').delete().eq('id', id);
+      fetchChores();
+    } catch (error) {
+      alert("Error al eliminar tarea");
+    }
   };
 
   return (
     <div className="space-y-8">
-      {/* Cleaning Schedule */}
-      <section className="glass-card p-6">
-        <h2 className="text-2xl font-bold mb-6 flex items-center">
-          <Calendar className="w-6 h-6 mr-2 text-cyan-400" />
-          Calendario de Limpieza
-        </h2>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 className="text-3xl font-bold font-heading text-white">Código de Orden</h2>
+          <p className="text-gray-400">Si lo usas, lo levantas. Si lo ensucias, lo limpias.</p>
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-            <h3 className="font-bold text-lg mb-2 text-cyan-300">Limpieza Pro (Externa)</h3>
-            <p className="text-sm text-gray-400 mb-4">Servicio contratado con Caja Común.</p>
-            <div className="flex items-center justify-between bg-black/20 p-3 rounded">
-              <span>Próxima Visita:</span>
-              <span className="font-mono font-bold text-white">Vie 28 Nov</span>
-            </div>
+      <Tabs defaultValue="tasks" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 bg-black/40 border border-white/10">
+          <TabsTrigger value="tasks">Tareas Activas</TabsTrigger>
+          <TabsTrigger value="rules">Reglas de Cocina</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="tasks" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Lista de Pendientes</CardTitle>
+              <CardDescription>Mantengamos el depa al 100.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Agregar nueva tarea..."
+                  value={newChore}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewChore(e.target.value)}
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && addChore()}
+                />
+                <Button onClick={addChore} size="icon" className="shrink-0 bg-cyan-600 hover:bg-cyan-500">
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <ScrollArea className="h-[400px] pr-4">
+                <div className="space-y-3">
+                  {chores.map((chore) => (
+                    <div
+                      key={chore.id}
+                      className={`group flex items-center justify-between p-4 rounded-xl border transition-all ${chore.completed
+                        ? "bg-emerald-900/10 border-emerald-500/20 opacity-60"
+                        : "bg-white/5 border-white/10 hover:border-white/20"
+                        }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => toggleChore(chore.id, chore.completed)}
+                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${chore.completed
+                            ? "bg-emerald-500 border-emerald-500 text-black"
+                            : "border-gray-500 hover:border-cyan-400"
+                            }`}
+                        >
+                          {chore.completed && <CheckCircle2 className="w-4 h-4" />}
+                        </button>
+                        <span className={`font-medium ${chore.completed ? "line-through text-gray-500" : "text-white"}`}>
+                          {chore.task}
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteChore(chore.id)}
+                        className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  {chores.length === 0 && (
+                    <div className="text-center py-12 text-gray-500">
+                      <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                      <p>¡Todo limpio! Disfruten la vibra alta.</p>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="rules" className="mt-6">
+          <div className="grid gap-6">
+            <Card className="bg-gradient-to-br from-orange-900/20 to-red-900/20 border-orange-500/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-orange-400">
+                  <Utensils className="w-5 h-5" />
+                  Cocina y Trastes
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-4 items-start p-4 bg-black/20 rounded-lg">
+                  <AlertCircle className="w-6 h-6 text-red-400 shrink-0 mt-1" />
+                  <div>
+                    <h4 className="font-bold text-white mb-1">Cero "Dejar para después"</h4>
+                    <p className="text-sm text-gray-300">
+                      Si cocinas, lavas. Los trastes sucios se lavan <strong>inmediatamente</strong>.
+                      Nada de "se remoja" ni "mañana temprano".
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-4 items-start p-4 bg-black/20 rounded-lg">
+                  <Trash2 className="w-6 h-6 text-orange-400 shrink-0 mt-1" />
+                  <div>
+                    <h4 className="font-bold text-white mb-1">Domingo de Descarte</h4>
+                    <p className="text-sm text-gray-300">
+                      Los alimentos caducados se tiran. La limpieza del refri es obligatoria cada domingo.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Limpieza General</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  <li className="flex items-center gap-3 text-gray-300">
+                    <Badge variant="outline">Limpieza Pro</Badge>
+                    Se paga con la Caja Común (Semanal/Quincenal).
+                  </li>
+                  <li className="flex items-center gap-3 text-gray-300">
+                    <Badge variant="outline">Cuarto de Servicio</Badge>
+                    Área Chill común. No es bodega ni habitación privada.
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
           </div>
-
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-            <h3 className="font-bold text-lg mb-2 text-cyan-300">Descarte de Refri</h3>
-            <p className="text-sm text-gray-400 mb-4">Limpieza obligatoria de alimentos caducados.</p>
-            <div className="flex items-center justify-between bg-black/20 p-3 rounded">
-              <span>Responsable esta semana:</span>
-              <span className="font-bold text-white">Todos (Domingo)</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Dynamic Chores List */}
-      <section className="glass-card p-6">
-        <h2 className="text-xl font-bold mb-4">Tareas Adicionales</h2>
-        <div className="flex gap-2 mb-4">
-          <input
-            type="text"
-            value={newChore}
-            onChange={(e) => setNewChore(e.target.value)}
-            placeholder="Agregar nueva tarea..."
-            className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white"
-          />
-          <button onClick={addChore} className="bg-cyan-600 p-2 rounded-lg text-white">
-            <Plus className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="space-y-2">
-          {chores.map(chore => (
-            <div key={chore.id} className="flex items-center justify-between bg-white/5 p-3 rounded hover:bg-white/10 transition-colors">
-              <span className={chore.is_completed ? "line-through text-gray-500" : "text-white"}>
-                {chore.title}
-              </span>
-              <button
-                onClick={() => toggleChore(chore.id, chore.is_completed)}
-                className={`p-1 rounded ${chore.is_completed ? "text-green-400" : "text-gray-400"}`}
-              >
-                <CheckSquare className="w-5 h-5" />
-              </button>
-            </div>
-          ))}
-          {chores.length === 0 && <p className="text-gray-500 text-sm italic">No hay tareas pendientes.</p>}
-        </div>
-      </section>
-
-      {/* Kitchen Rules */}
-      <section className="glass-card p-6">
-        <h2 className="text-2xl font-bold mb-6 flex items-center">
-          <Utensils className="w-6 h-6 mr-2 text-purple-400" />
-          Reglas de Cocina
-        </h2>
-
-        <div className="space-y-4">
-          <div className="flex items-start gap-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-            <div className="p-2 bg-purple-500/20 rounded-full text-purple-400 mt-1">
-              <CheckSquare className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-purple-300">Etiquetado</h3>
-              <p className="text-sm text-gray-400">
-                Todo lo que entra al refri debe tener nombre si es personal.
-                Si no tiene nombre, es dominio público (Community Chest).
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

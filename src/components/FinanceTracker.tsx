@@ -1,35 +1,37 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ROOMIES } from "@/lib/bossLogic";
-import { DollarSign, CheckCircle, XCircle, Calculator, Wallet, Loader2 } from "lucide-react";
+import { ROOMIES, getBossOfTheMonth } from "@/lib/bossLogic";
+import { DollarSign, CheckCircle, XCircle, Calculator, Wallet, Loader2, AlertTriangle, ArrowUpRight, CheckCircle2, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Payment, Roomie } from "@/types";
 
 export default function FinanceTracker() {
-    const [serviceTotal, setServiceTotal] = useState("");
-    const [payments, setPayments] = useState<any[]>([]);
+    const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
-
-    const calculateServiceSplit = () => {
-        const total = parseFloat(serviceTotal);
-        if (isNaN(total)) return 0;
-        return (total / 3).toFixed(2);
-    };
+    const [serviceTotal, setServiceTotal] = useState("");
+    const [boss, setBoss] = useState<Roomie | null>(null);
 
     useEffect(() => {
         fetchPayments();
+        setBoss(getBossOfTheMonth());
     }, []);
 
     const fetchPayments = async () => {
         try {
-            const { data, error } = await supabase
-                .from('payments')
-                .select('*');
-
-            if (error) throw error;
-            if (data) setPayments(data);
+            const { data, error } = await supabase.from('payments').select('*');
+            if (data) setPayments(data as Payment[]);
         } catch (error) {
-            console.error('Error fetching payments:', error);
+            console.error("Error fetching payments", error);
         } finally {
             setLoading(false);
         }
@@ -37,174 +39,218 @@ export default function FinanceTracker() {
 
     const markAsPaid = async (roomieId: string, amount: number, type: 'rent' | 'pool') => {
         try {
-            const { error } = await supabase
-                .from('payments')
-                .insert([
-                    {
-                        roomie_id: roomieId,
-                        amount: amount,
-                        status: 'paid',
-                        type: type,
-                        month_date: new Date().toISOString().slice(0, 8) + '01' // First of current month
-                    }
-                ]);
-
-            if (error) throw error;
-            fetchPayments(); // Refresh
+            await supabase.from('payments').insert([{
+                roomie_id: roomieId,
+                amount,
+                status: 'paid',
+                type,
+                month_date: new Date().toISOString().slice(0, 8) + '01'
+            }]);
+            fetchPayments();
         } catch (error) {
             alert("Error al registrar pago");
-            console.error(error);
         }
     };
 
     const getPaymentStatus = (roomieId: string, type: 'rent' | 'pool') => {
-        // Simple check for current month
-        const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+        const currentMonth = new Date().toISOString().slice(0, 8) + '01';
         return payments.find(p =>
             p.roomie_id === roomieId &&
             p.type === type &&
-            p.month_date.startsWith(currentMonth)
+            p.month_date === currentMonth
         );
     };
 
+    const servicePerPerson = serviceTotal ? (parseFloat(serviceTotal) / 3).toFixed(2) : "0.00";
+
     return (
         <div className="space-y-8">
-            {/* Rent Breakdown */}
-            <section className="glass-card p-6">
-                <h2 className="text-2xl font-bold mb-6 flex items-center">
-                    <DollarSign className="w-6 h-6 mr-2 text-green-400" />
-                    Control de Renta
-                </h2>
-
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="text-gray-400 border-b border-gray-700">
-                                <th className="p-3">Roomie</th>
-                                <th className="p-3">Monto</th>
-                                <th className="p-3">Status</th>
-                                <th className="p-3">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {ROOMIES.map((roomie) => {
-                                const payment = getPaymentStatus(roomie.id, 'rent');
-                                const isPaid = !!payment;
-
-                                return (
-                                    <tr key={roomie.id} className="border-b border-gray-800 hover:bg-white/5 transition-colors">
-                                        <td className="p-3 flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${roomie.color}`}></div>
-                                            {roomie.name}
-                                        </td>
-                                        <td className="p-3 font-mono">${roomie.rent.toLocaleString()}</td>
-                                        <td className="p-3">
-                                            {isPaid ? (
-                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
-                                                    Pagado
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400">
-                                                    Pendiente
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="p-3">
-                                            {!isPaid && (
-                                                <button
-                                                    onClick={() => markAsPaid(roomie.id, roomie.rent, 'rent')}
-                                                    className="text-xs bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded transition-colors"
-                                                >
-                                                    Marcar Pagado
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                            <tr className="font-bold bg-white/5">
-                                <td className="p-3">TOTAL</td>
-                                <td className="p-3 font-mono">$32,000</td>
-                                <td className="p-3"></td>
-                                <td className="p-3"></td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 className="text-3xl font-bold font-heading text-white">The Finance Game</h2>
+                    <p className="text-gray-400">Regla de Oro: El pago es final e irrevocable.</p>
                 </div>
-            </section>
-
-            {/* Services Splitter */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <section className="glass-card p-6">
-                    <h2 className="text-xl font-bold mb-4 flex items-center">
-                        <Calculator className="w-5 h-5 mr-2 text-cyan-400" />
-                        Calculadora de Servicios
-                    </h2>
-                    <p className="text-sm text-gray-400 mb-4">Ingresa el total de Luz, Agua, Gas e Internet.</p>
-
-                    <div className="flex gap-4 mb-4">
-                        <input
-                            type="number"
-                            placeholder="Total del recibo"
-                            value={serviceTotal}
-                            onChange={(e) => setServiceTotal(e.target.value)}
-                            className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition-colors"
-                        />
-                    </div>
-
-                    {serviceTotal && (
-                        <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-4 text-center">
-                            <p className="text-sm text-cyan-300 mb-1">A pagar por persona:</p>
-                            <p className="text-3xl font-bold text-white">${calculateServiceSplit()}</p>
-                        </div>
-                    )}
-                </section>
-
-                {/* Common Box */}
-                <section className="glass-card p-6">
-                    <h2 className="text-xl font-bold mb-4 flex items-center">
-                        <Wallet className="w-5 h-5 mr-2 text-purple-400" />
-                        Caja Común (Pool)
-                    </h2>
-
-                    <div className="flex justify-between items-center mb-6">
-                        <div>
-                            <p className="text-sm text-gray-400">Saldo Actual</p>
-                            <p className="text-3xl font-bold text-white">$1,500.00</p>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-sm text-gray-400">Meta Mensual</p>
-                            <p className="text-xl font-mono text-gray-300">$1,500.00</p>
-                        </div>
-                    </div>
-
-                    <div className="space-y-3">
-                        {ROOMIES.map((roomie) => {
-                            const isPaid = !!getPaymentStatus(roomie.id, 'pool');
-                            return (
-                                <div key={roomie.id} className="flex justify-between items-center text-sm">
-                                    <span className="flex items-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full bg-gradient-to-br ${roomie.color}`}></div>
-                                        {roomie.name}
-                                    </span>
-                                    {isPaid ? (
-                                        <span className="flex items-center text-green-400">
-                                            <CheckCircle className="w-3 h-3 mr-1" /> Pagado ($500)
-                                        </span>
-                                    ) : (
-                                        <button
-                                            onClick={() => markAsPaid(roomie.id, 500, 'pool')}
-                                            className="text-xs text-gray-400 hover:text-white underline"
-                                        >
-                                            Marcar Pagado
-                                        </button>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                </section>
+                {boss && (
+                    <Badge variant="vibra" className="text-sm py-1 px-3">
+                        Boss Actual: {boss.name}
+                    </Badge>
+                )}
             </div>
+
+            <Tabs defaultValue="rent" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 bg-black/40 border border-white/10">
+                    <TabsTrigger value="rent">Renta Mensual</TabsTrigger>
+                    <TabsTrigger value="services">Servicios (1/3)</TabsTrigger>
+                    <TabsTrigger value="pool">Caja Común</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="rent" className="mt-6 space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Desglose de Renta</CardTitle>
+                            <CardDescription>Total a recaudar: $32,000 MXN (Día 30)</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="border-white/10 hover:bg-transparent">
+                                        <TableHead className="text-gray-400">Roomie</TableHead>
+                                        <TableHead className="text-gray-400">Espacio</TableHead>
+                                        <TableHead className="text-right text-gray-400">Monto</TableHead>
+                                        <TableHead className="text-center text-gray-400">Estado</TableHead>
+                                        <TableHead className="text-right text-gray-400">Acción</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {ROOMIES.map((roomie) => {
+                                        const status = getPaymentStatus(roomie.id, 'rent');
+                                        return (
+                                            <TableRow key={roomie.id} className="border-white/10 hover:bg-white/5">
+                                                <TableCell className="font-medium text-white">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${roomie.color}`} />
+                                                        {roomie.name}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-gray-400">
+                                                    {roomie.hasCloset ? "Con Clóset" : "Sin Clóset"}
+                                                </TableCell>
+                                                <TableCell className="text-right font-mono text-white">
+                                                    ${roomie.rent.toLocaleString()}
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    {status ? (
+                                                        <Badge variant="success" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                                                            Pagado
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant="outline" className="text-gray-500 border-gray-700">
+                                                            Pendiente
+                                                        </Badge>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {!status && (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className="hover:bg-cyan-500/20 hover:text-cyan-400"
+                                                            onClick={() => markAsPaid(roomie.id, roomie.rent, 'rent')}
+                                                        >
+                                                            Marcar Pagado
+                                                        </Button>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="services" className="mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Calculadora de División</CardTitle>
+                                <CardDescription>Ingresa el total del recibo para dividirlo entre 3.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm text-gray-400">Monto del Recibo</label>
+                                    <div className="relative">
+                                        <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                                        <Input
+                                            type="number"
+                                            placeholder="0.00"
+                                            className="pl-9"
+                                            value={serviceTotal}
+                                            onChange={(e) => setServiceTotal(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-gray-400">A pagar por persona:</span>
+                                        <span className="text-2xl font-bold text-cyan-400">${servicePerPerson}</span>
+                                    </div>
+                                    <p className="text-xs text-gray-500">Incluye: Luz, Gas, Agua, Internet</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border-cyan-500/20">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <AlertTriangle className="w-5 h-5 text-cyan-400" />
+                                    Recordatorio
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-gray-300 mb-4">
+                                    El Boss del Mes recolecta los pagos de servicios y hace las transferencias.
+                                    <br /><br />
+                                    "Cuentas claras, amistades largas."
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="pool" className="mt-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Caja Común (Pool)</CardTitle>
+                            <CardDescription>Aportación mensual: $500 MXN (Primeros 5 días)</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                                {ROOMIES.map((roomie) => {
+                                    const status = getPaymentStatus(roomie.id, 'pool');
+                                    return (
+                                        <div key={roomie.id} className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-10 w-10">
+                                                    <AvatarImage src={roomie.avatar} />
+                                                    <AvatarFallback>{roomie.name.charAt(0)}</AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="font-medium text-white text-sm">{roomie.name.split(' ')[0]}</p>
+                                                    <p className="text-xs text-gray-500">$500.00</p>
+                                                </div>
+                                            </div>
+                                            {status ? (
+                                                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                                            ) : (
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    className="h-8 w-8 hover:bg-emerald-500/20 hover:text-emerald-400"
+                                                    onClick={() => markAsPaid(roomie.id, 500, 'pool')}
+                                                >
+                                                    <ArrowUpRight className="w-4 h-4" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                                <h4 className="font-bold text-purple-400 mb-2 flex items-center gap-2">
+                                    <Sparkles className="w-4 h-4" />
+                                    Bonus Anual
+                                </h4>
+                                <p className="text-sm text-gray-300">
+                                    Si sobra dinero al final del año, se divide o se gasta en una <strong>peda épica</strong>.
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }
