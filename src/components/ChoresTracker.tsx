@@ -153,10 +153,10 @@ export default function ChoresTracker() {
                 <div className="flex gap-4 items-start p-4 bg-black/20 rounded-lg">
                   <AlertCircle className="w-6 h-6 text-red-400 shrink-0 mt-1" />
                   <div>
-                    <h4 className="font-bold text-white mb-1">Cero "Dejar para después"</h4>
+                    <h4 className="font-bold text-white mb-1">Cero &quot;Dejar para después&quot;</h4>
                     <p className="text-sm text-gray-300">
                       Si cocinas, lavas. Los trastes sucios se lavan <strong>inmediatamente</strong>.
-                      Nada de "se remoja" ni "mañana temprano".
+                      Nada de &quot;se remoja&quot; ni &quot;mañana temprano&quot;.
                     </p>
                   </div>
                 </div>

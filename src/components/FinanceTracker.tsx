@@ -217,8 +217,10 @@ export default function FinanceTracker() {
                                             Si sobra dinero al final del año, se divide o se gasta en una <strong>peda épica</strong>.
                                         </p>
                                     </div>
+                                </div>
                             </CardContent>
                         </Card>
+                    </div>
                 </TabsContent>
             </Tabs>
         </div>

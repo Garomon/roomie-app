@@ -39,6 +39,7 @@ export default function Dashboard() {
                 description: "Ve preparando la transferencia.",
             });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (!mounted || !boss || !rentInfo) return null;

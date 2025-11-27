@@ -25,7 +25,7 @@ export default function ManifestoViewer() {
             icon: <Zap className="w-5 h-5 text-yellow-400" />,
             content: (
                 <div className="space-y-6">
-                    <p>La renta se paga a tiempo, no excuses. El cobro se hace por el 'Boss' del Mes (Responsable de Consolidación) que rota para que el karma sea parejo.</p>
+                    <p>La renta se paga a tiempo, no excuses. El cobro se hace por el &apos;Boss&apos; del Mes (Responsable de Consolidación) que rota para que el karma sea parejo.</p>
 
                     <div className="grid gap-3 text-sm bg-black/20 p-4 rounded-lg border border-white/5">
                         <div className="grid grid-cols-12 gap-2 border-b border-white/10 pb-2 font-bold text-gray-400">
@@ -52,11 +52,11 @@ export default function ManifestoViewer() {
                             <div className="col-span-8">TOTAL RENTA MENSUAL</div>
                             <div className="col-span-4 text-right font-mono text-emerald-400">$32,000.00</div>
                         </div>
-                        <p className="text-xs text-center text-gray-500 mt-2">Fecha Límite de Pago al 'Boss': Día 30 de cada mes</p>
+                        <p className="text-xs text-center text-gray-500 mt-2">Fecha Límite de Pago al &apos;Boss&apos;: Día 30 de cada mes</p>
                     </div>
 
                     <div className="space-y-4">
-                        <h3 className="font-bold text-white">A. El 'Boss' del Mes (Rotación del Consolidador)</h3>
+                        <h3 className="font-bold text-white">A. El &apos;Boss&apos; del Mes (Rotación del Consolidador)</h3>
                         <ul className="list-decimal list-inside space-y-2 text-gray-300 pl-2">
                             <li><strong>Rotación:</strong> Ser el Boss significa que te toca juntar la lana ($32,000.00 MXN) de la renta y los servicios. La responsabilidad rota una vez cada tres meses por persona.</li>
                             <li><strong>Deadline:</strong> El Boss del Mes debe asegurar que el pago total llegue al Arrendador el Día 1 de cada mes (No se puede fallar!).</li>
@@ -79,7 +79,7 @@ export default function ManifestoViewer() {
 
                     <div className="space-y-2">
                         <h3 className="font-bold text-white">B. REGLA DE ORO DEL PAGO (Cero Tolerancia)</h3>
-                        <p className="text-gray-300">El pago de la renta individual al 'Boss' (Día 30) es final e irrevocable. No hay espacio para "pon mi parte y te repongo después" o "me faltan 5 días". El Boss necesita el dinero COMPLETO en tiempo y forma para pagar el día 1, sin tener que poner su propio dinero o perseguir el pago.</p>
+                        <p className="text-gray-300">El pago de la renta individual al &apos;Boss&apos; (Día 30) es final e irrevocable. No hay espacio para &quot;pon mi parte y te repongo después&quot; o &quot;me faltan 5 días&quot;. El Boss necesita el dinero COMPLETO en tiempo y forma para pagar el día 1, sin tener que poner su propio dinero o perseguir el pago.</p>
                     </div>
 
                     <div className="space-y-2">
@@ -104,7 +104,7 @@ export default function ManifestoViewer() {
                                 </ul>
                             </li>
                             <li><strong>El Bonus Anual:</strong> Si al final del año (12 meses) existe un saldo positivo en la caja común, el pool se dividirá equitativamente entre los tres, o se gastará en algo compartido (ej. una peda, una cena épica, unas damas o todo junto).</li>
-                            <li><strong>Control:</strong> El Tesorero de la Caja Común será el mismo 'Boss' del Mes en turno. Se encargará de llevar un tracking transparente en la APP.</li>
+                            <li><strong>Control:</strong> El Tesorero de la Caja Común será el mismo &apos;Boss&apos; del Mes en turno. Se encargará de llevar un tracking transparente en la APP.</li>
                         </ul>
                     </div>
                 </div>
@@ -128,7 +128,7 @@ export default function ManifestoViewer() {
                     <div className="space-y-2">
                         <h3 className="font-bold text-white">B. Cocina y Trastes</h3>
                         <ul className="list-decimal list-inside space-y-2 text-gray-300 pl-2">
-                            <li><strong>Trastes:</strong> Si cocinas, lavas. Los trastes sucios se lavan inmediatamente. Cero "dejar para después" o acumular e irse a dormir.</li>
+                            <li><strong>Trastes:</strong> Si cocinas, lavas. Los trastes sucios se lavan inmediatamente. Cero &quot;dejar para después&quot; o acumular e irse a dormir.</li>
                             <li><strong>Refrigerador:</strong> La comida debe estar marcada con tu nombre o de uso general para evitar malentendidos (y confusiones).</li>
                             <li><strong>Descarte:</strong> Los alimentos caducados se tiran. La limpieza de este tema es obligatoria y compartida cada domingo por la noche.</li>
                         </ul>
