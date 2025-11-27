@@ -3,6 +3,7 @@ import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/components/AuthProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -28,11 +29,13 @@ export default function RootLayout({
     <html lang="es" className="dark">
       <body className={`${outfit.variable} ${inter.variable} font-sans antialiased bg-black text-white selection:bg-cyan-500/30`}>
         <link rel="manifest" href="/manifest.json" />
-        <Navigation />
-        <main className="container mx-auto px-4 py-8">
-          {children}
-        </main>
-        <Toaster />
+        <AuthProvider>
+          <Navigation />
+          <main className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+            {children}
+          </main>
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

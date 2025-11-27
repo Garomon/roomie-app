@@ -10,6 +10,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { SearchCommand } from "@/components/SearchCommand";
 import { NotificationsCenter } from "@/components/NotificationsCenter";
+import LoginButton from "@/components/LoginButton";
 
 export default function Navigation() {
     const pathname = usePathname();
@@ -67,6 +68,10 @@ export default function Navigation() {
 
                     <NotificationsCenter />
 
+                    <div className="hidden md:block">
+                        <LoginButton />
+                    </div>
+
                     {/* Mobile Menu */}
                     <Sheet open={isOpen} onOpenChange={setIsOpen}>
                         <SheetTrigger asChild className="md:hidden">
@@ -76,6 +81,10 @@ export default function Navigation() {
                         </SheetTrigger>
                         <SheetContent side="right" className="w-[300px] border-l-white/10 bg-black/95">
                             <div className="flex flex-col gap-4 mt-8">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium text-gray-400">Menu</span>
+                                    <LoginButton />
+                                </div>
                                 <SearchCommand />
                                 {routes.map((route) => (
                                     <Link
