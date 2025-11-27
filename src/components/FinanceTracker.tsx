@@ -176,79 +176,49 @@ export default function FinanceTracker() {
                                         <span className="text-gray-400">A pagar por persona:</span>
                                         <span className="text-2xl font-bold text-cyan-400">${servicePerPerson}</span>
                                     </div>
-                                    <p className="text-xs text-gray-500">Incluye: Luz, Gas, Agua, Internet</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border-cyan-500/20">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <AlertTriangle className="w-5 h-5 text-cyan-400" />
-                                    Recordatorio
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-gray-300 mb-4">
-                                    El Boss del Mes recolecta los pagos de servicios y hace las transferencias.
-                                    <br /><br />
-                                    "Cuentas claras, amistades largas."
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </TabsContent>
-
-                <TabsContent value="pool" className="mt-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Caja Común (Pool)</CardTitle>
-                            <CardDescription>Aportación mensual: $500 MXN (Primeros 5 días)</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                                {ROOMIES.map((roomie) => {
-                                    const status = getPaymentStatus(roomie.id, 'pool');
-                                    return (
-                                        <div key={roomie.id} className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="h-10 w-10">
-                                                    <AvatarImage src={roomie.avatar} />
-                                                    <AvatarFallback>{roomie.name.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <p className="font-medium text-white text-sm">{roomie.name.split(' ')[0]}</p>
-                                                    <p className="text-xs text-gray-500">$500.00</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                                        {ROOMIES.map((roomie) => {
+                                            const status = getPaymentStatus(roomie.id, 'pool');
+                                            return (
+                                                <div key={roomie.id} className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="h-10 w-10">
+                                                            <AvatarImage src={roomie.avatar} />
+                                                            <AvatarFallback>{roomie.name.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div>
+                                                            <p className="font-medium text-white text-sm">{roomie.name.split(' ')[0]}</p>
+                                                            <p className="text-xs text-gray-500">$500.00</p>
+                                                        </div>
+                                                    </div>
+                                                    {status ? (
+                                                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                                                    ) : (
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className="h-8 w-8 hover:bg-emerald-500/20 hover:text-emerald-400"
+                                                            onClick={() => markAsPaid(roomie.id, 500, 'pool')}
+                                                        >
+                                                            <ArrowUpRight className="w-4 h-4" />
+                                                        </Button>
+                                                    )}
                                                 </div>
-                                            </div>
-                                            {status ? (
-                                                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                                            ) : (
-                                                <Button
-                                                    size="icon"
-                                                    variant="ghost"
-                                                    className="h-8 w-8 hover:bg-emerald-500/20 hover:text-emerald-400"
-                                                    onClick={() => markAsPaid(roomie.id, 500, 'pool')}
-                                                >
-                                                    <ArrowUpRight className="w-4 h-4" />
-                                                </Button>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                            );
+                                        })}
+                                    </div>
 
-                            <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
-                                <h4 className="font-bold text-purple-400 mb-2 flex items-center gap-2">
-                                    <Sparkles className="w-4 h-4" />
-                                    Bonus Anual
-                                </h4>
-                                <p className="text-sm text-gray-300">
-                                    Si sobra dinero al final del año, se divide o se gasta en una <strong>peda épica</strong>.
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                                    <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                                        <h4 className="font-bold text-purple-400 mb-2 flex items-center gap-2">
+                                            <Sparkles className="w-4 h-4" />
+                                            Bonus Anual
+                                        </h4>
+                                        <p className="text-sm text-gray-300">
+                                            Si sobra dinero al final del año, se divide o se gasta en una <strong>peda épica</strong>.
+                                        </p>
+                                    </div>
+                            </CardContent>
+                        </Card>
                 </TabsContent>
             </Tabs>
         </div>

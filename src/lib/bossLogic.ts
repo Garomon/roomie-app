@@ -28,24 +28,38 @@ export const ROOMIES: Roomie[] = [
 ];
 
 // Rotation: Alejandro -> Edgardo -> James
+// Base Date: November 2025 (Month 0 of the cycle)
 const BOSS_ROTATION = ["alejandro", "edgardo", "james"];
+const START_DATE = new Date(2025, 10, 1); // November 1, 2025 (Month is 0-indexed, so 10 is Nov)
 
 export function getBossOfTheMonth(): Roomie {
     const today = new Date();
-    const monthIndex = today.getMonth(); // 0-11
-    // Simple rotation logic based on month index
-    // Adjust offset as needed to match current reality
-    const bossId = BOSS_ROTATION[monthIndex % 3];
+
+    // Calculate months passed since start date
+    const yearsDiff = today.getFullYear() - START_DATE.getFullYear();
+    const monthsDiff = today.getMonth() - START_DATE.getMonth();
+    const totalMonthsPassed = (yearsDiff * 12) + monthsDiff;
+
+    // Ensure positive index even if system time is before start date (for testing)
+    const rotationIndex = Math.abs(totalMonthsPassed) % 3;
+
+    const bossId = BOSS_ROTATION[rotationIndex];
     return ROOMIES.find(r => r.id === bossId) || ROOMIES[0];
 }
 
-export function getDaysUntilRentDue(): RentInfo {
+export type UrgencyLevel = 'normal' | 'warning' | 'critical';
+
+export interface RentStatus extends RentInfo {
+    urgency: UrgencyLevel;
+    statusMessage: string;
+}
+
+export function getDaysUntilRentDue(): RentStatus {
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
 
     // Rent is due on the 30th of the current month
-    // If today is past the 30th, it's due next month
     let dueDate = new Date(currentYear, currentMonth, 30);
 
     // Handle February (28/29 days)
@@ -54,20 +68,43 @@ export function getDaysUntilRentDue(): RentInfo {
         dueDate = new Date(currentYear, currentMonth, lastDay);
     }
 
-    if (today > dueDate) {
+    // If today is past the 30th, the due date was this month (overdue) or next month?
+    // The manifesto says "Pago al Boss dia 30".
+    // If it's the 31st, it's technically overdue for the current month, or we start counting for next?
+    // Let's assume if we are past the 25th, we are looking at the current month's deadline.
+    // If we are past the 30th (e.g. 31st), we are overdue.
+
+    // Logic: 
+    // If today <= 30: Due date is this month's 30.
+    // If today > 30: Due date is NEXT month's 30.
+
+    if (today.getDate() > 30) {
         dueDate = new Date(currentYear, currentMonth + 1, 30);
-        // Handle Feb next year if needed
+        // Handle Feb next year
         if (dueDate.getMonth() === 1) {
             const lastDay = new Date(dueDate.getFullYear(), 2, 0).getDate();
             dueDate.setDate(lastDay);
         }
     }
 
-    const diffTime = Math.abs(dueDate.getTime() - today.getTime());
+    const diffTime = dueDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    let urgency: UrgencyLevel = 'normal';
+    let statusMessage = 'Tiempo de sobra';
+
+    if (diffDays <= 2) {
+        urgency = 'critical';
+        statusMessage = '¡Paga YA!';
+    } else if (diffDays <= 5) {
+        urgency = 'warning';
+        statusMessage = 'Se acerca la fecha';
+    }
 
     return {
         daysLeft: diffDays,
-        dueDate: dueDate
+        dueDate: dueDate,
+        urgency,
+        statusMessage
     };
 }
