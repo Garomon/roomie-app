@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Heart, Shield, Zap } from "lucide-react";
+import SignaturePad from "@/components/SignaturePad";
 
 export default function ManifestoViewer() {
     const sections = [
@@ -190,13 +191,9 @@ export default function ManifestoViewer() {
                 ))}
             </div>
 
-            <div className="flex justify-center pt-8">
-                <div className="flex -space-x-4">
-                    {['A', 'E', 'J'].map((initial, i) => (
-                        <div key={i} className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 border-4 border-black flex items-center justify-center font-bold text-white shadow-lg z-10 hover:z-20 hover:scale-110 transition-transform cursor-default">
-                            {initial}
-                        </div>
-                    ))}
+            <div className="flex justify-center pt-8 pb-12">
+                <div className="w-full max-w-md">
+                    <SignaturePad />
                 </div>
             </div>
         </div>

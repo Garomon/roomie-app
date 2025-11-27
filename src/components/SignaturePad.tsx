@@ -1,196 +1,104 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { Eraser, Save, Loader2 } from "lucide-react";
+import { useRef, useState } from "react";
+import SignatureCanvas from "react-signature-canvas";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { Eraser, Save, PenTool } from "lucide-react";
 
 export default function SignaturePad() {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [isDrawing, setIsDrawing] = useState(false);
-    const [hasSignature, setHasSignature] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
+    const sigCanvas = useRef<SignatureCanvas>(null);
+    const [name, setName] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-
-        ctx.lineWidth = 2;
-        ctx.lineCap = "round";
-        ctx.strokeStyle = "#ffffff";
-
-        // Handle resize
-        const resizeCanvas = () => {
-            const parent = canvas.parentElement;
-            if (parent) {
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = canvas.width;
-                tempCanvas.height = canvas.height;
-                tempCanvas.getContext('2d')?.drawImage(canvas, 0, 0);
-
-                canvas.width = parent.clientWidth;
-                canvas.height = 200;
-                ctx.lineWidth = 2;
-                ctx.lineCap = "round";
-                ctx.strokeStyle = "#ffffff";
-            }
-        };
-
-        resizeCanvas();
-        window.addEventListener("resize", resizeCanvas);
-        return () => window.removeEventListener("resize", resizeCanvas);
-    }, []);
-
-    const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
-        setIsDrawing(true);
-        draw(e);
+    const clear = () => {
+        sigCanvas.current?.clear();
     };
 
-    const stopDrawing = () => {
-        setIsDrawing(false);
-        const canvas = canvasRef.current;
-        if (canvas) {
-            const ctx = canvas.getContext("2d");
-            ctx?.beginPath();
+    const save = async () => {
+        if (!name.trim()) {
+            toast.error("Por favor escribe tu nombre");
+            return;
         }
-    };
-
-    const draw = (e: React.MouseEvent | React.TouchEvent) => {
-        if (!isDrawing) return;
-
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-
-        const rect = canvas.getBoundingClientRect();
-        let x, y;
-
-        if ('touches' in e) {
-            x = e.touches[0].clientX - rect.left;
-            y = e.touches[0].clientY - rect.top;
-        } else {
-            x = (e as React.MouseEvent).clientX - rect.left;
-            y = (e as React.MouseEvent).clientY - rect.top;
+        if (sigCanvas.current?.isEmpty()) {
+            toast.error("Por favor firma el documento");
+            return;
         }
 
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        setHasSignature(true);
-    };
-
-    const clearCanvas = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        setHasSignature(false);
-    };
-
-    const saveSignature = async () => {
-        if (!hasSignature) return;
-        setIsSaving(true);
+        setLoading(true);
+        const signatureData = sigCanvas.current?.getTrimmedCanvas().toDataURL("image/png");
 
         try {
-            // Debug: Log environment variables
-            console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-            console.log('Supabase Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-
-            const canvas = canvasRef.current;
-            const signatureData = canvas?.toDataURL();
-
-            const name = prompt("Ingresa tu nombre para firmar:");
-            if (!name) {
-                setIsSaving(false);
-                return;
-            }
-
-            console.log('Attempting to save signature...');
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from('signatures')
-                .insert([
-                    { roomie_name: name, signature_data: signatureData }
-                ]);
-
-            console.log('Supabase response:', { data, error });
+                .insert([{ name, signature_data: signatureData }]);
 
             if (error) throw error;
 
-            alert("¡Firma guardada exitosamente en la nube!");
-            clearCanvas();
+            toast.success("¡Firma guardada con éxito!", {
+                description: "Has aceptado el Manifiesto Anzures."
+            });
+            clear();
+            setName("");
         } catch (error) {
-            console.error('Error saving signature:', error);
-            console.error('Error type:', typeof error);
-            console.error('Error keys:', Object.keys(error as any));
-            console.error('Full error:', JSON.stringify(error, null, 2));
-
-            const errorMessage = (error as any)?.message ||
-                (error as any)?.error_description ||
-                (error as any)?.msg ||
-                'Error desconocido. Revisa la consola del navegador.';
-            alert(`Error al guardar la firma: ${errorMessage}`);
+            console.error(error);
+            toast.error("Error al guardar la firma");
         } finally {
-            setIsSaving(false);
+            setLoading(false);
         }
     };
 
     return (
-        <div className="glass-card p-6">
-            <h3 className="text-xl font-bold mb-4">Firma Digital</h3>
-            <p className="text-sm text-gray-400 mb-4">
-                Al firmar, aceptas los términos del Manifiesto Anzures.
-            </p>
-
-            <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-900/50 mb-4 touch-none">
-                <canvas
-                    ref={canvasRef}
-                    className="w-full h-[200px] cursor-crosshair"
-                    onMouseDown={startDrawing}
-                    onMouseUp={stopDrawing}
-                    onMouseOut={stopDrawing}
-                    onMouseMove={draw}
-                    onTouchStart={startDrawing}
-                    onTouchEnd={stopDrawing}
-                    onTouchMove={draw}
+        <Card className="w-full max-w-md mx-auto bg-white/5 border-white/10">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <PenTool className="w-5 h-5 text-cyan-400" />
+                    Firma Digital
+                </CardTitle>
+                <CardDescription>
+                    Al firmar, aceptas las reglas de convivencia y la autoridad del Boss del Mes.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <input
+                    type="text"
+                    placeholder="Tu Nombre Completo"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition-colors"
                 />
-            </div>
 
-            <div className="flex gap-4">
-                <button
-                    onClick={clearCanvas}
-                    disabled={isSaving}
-                    className="flex items-center px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-sm disabled:opacity-50"
-                >
-                    <Eraser className="w-4 h-4 mr-2" />
-                    Borrar
-                </button>
-                <button
-                    onClick={saveSignature}
-                    disabled={!hasSignature || isSaving}
-                    className={`flex items-center px-4 py-2 rounded-lg transition-colors text-sm ml-auto ${hasSignature && !isSaving
-                            ? "bg-cyan-600 hover:bg-cyan-500 text-white"
-                            : "bg-gray-800 text-gray-500 cursor-not-allowed"
-                        }`}
-                >
-                    {isSaving ? (
-                        <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Guardando...
-                        </>
-                    ) : (
-                        <>
-                            <Save className="w-4 h-4 mr-2" />
-                            Firmar Manifiesto
-                        </>
-                    )}
-                </button>
-            </div>
-        </div>
+                <div className="border border-white/20 rounded-xl overflow-hidden bg-white">
+                    <SignatureCanvas
+                        ref={sigCanvas}
+                        penColor="black"
+                        canvasProps={{
+                            className: "w-full h-40 cursor-crosshair"
+                        }}
+                    />
+                </div>
+
+                <div className="flex gap-3">
+                    <Button
+                        variant="outline"
+                        onClick={clear}
+                        className="flex-1 border-white/10 hover:bg-white/5 text-gray-400"
+                    >
+                        <Eraser className="w-4 h-4 mr-2" />
+                        Borrar
+                    </Button>
+                    <Button
+                        onClick={save}
+                        disabled={loading}
+                        className="flex-1 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white border-0"
+                    >
+                        <Save className="w-4 h-4 mr-2" />
+                        {loading ? "Guardando..." : "Firmar Manifiesto"}
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
     );
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
-import { Navigation } from "@/components/Navigation";
+import Navigation from "@/components/Navigation";
 import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
@@ -26,7 +26,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className="dark">
-      <body className={`${inter.variable} ${outfit.variable} antialiased min-h-screen bg-background text-foreground`}>
+      <body className={`${outfit.variable} ${inter.variable} font-sans antialiased bg-black text-white selection:bg-cyan-500/30`}>
+        <link rel="manifest" href="/manifest.json" />
         <Navigation />
         <main className="container mx-auto px-4 py-8">
           {children}

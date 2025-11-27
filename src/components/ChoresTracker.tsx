@@ -18,6 +18,20 @@ export default function ChoresTracker() {
 
   useEffect(() => {
     fetchChores();
+
+    const channel = supabase
+      .channel('chores_changes')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'chores' },
+        () => {
+          fetchChores();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchChores = async () => {

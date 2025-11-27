@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getBossOfTheMonth, getDaysUntilRentDue, RentStatus } from "@/lib/bossLogic";
-import { Crown, Calendar, Wallet, ArrowRight, Sparkles, AlertCircle, CheckCircle2, Clock, PiggyBank } from "lucide-react";
+import { Crown, Clock, PiggyBank, ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,12 +12,18 @@ import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
 import { Roomie } from "@/types";
 import { toast } from "sonner";
+import ActivityFeed from "@/components/ActivityFeed";
+import { supabase } from "@/lib/supabase";
 
 export default function Dashboard() {
     const [boss, setCurrentBoss] = useState<Roomie | null>(null);
     const [rentInfo, setRentInfo] = useState<RentStatus | null>(null);
     const [commonBoxTotal, setCommonBoxTotal] = useState(0);
+    const [rentCollected, setRentCollected] = useState(0);
     const [mounted, setMounted] = useState(false);
+
+    const RENT_GOAL = 32000;
+    const rentProgress = (rentCollected / RENT_GOAL) * 100;
 
     useEffect(() => {
         const boss = getBossOfTheMonth();
@@ -25,8 +31,32 @@ export default function Dashboard() {
 
         setCurrentBoss(boss);
         setRentInfo(rent);
-        setCommonBoxTotal(1500); // Mock total
         setMounted(true);
+
+        const fetchFinancials = async () => {
+            const currentMonth = new Date().toISOString().slice(0, 8) + '01';
+
+            // Fetch Rent Payments
+            const { data: rentPayments } = await supabase
+                .from('payments')
+                .select('amount')
+                .eq('type', 'rent')
+                .eq('month_date', currentMonth);
+
+            const totalRent = rentPayments?.reduce((sum, p) => sum + p.amount, 0) || 0;
+            setRentCollected(totalRent);
+
+            // Fetch Common Box
+            const { data: poolPayments } = await supabase
+                .from('payments')
+                .select('amount')
+                .eq('type', 'pool');
+
+            const totalPool = poolPayments?.reduce((sum, p) => sum + p.amount, 0) || 0;
+            setCommonBoxTotal(totalPool);
+        };
+
+        fetchFinancials();
 
         // Smart Alert System
         if (rent.urgency === 'critical') {
@@ -39,7 +69,6 @@ export default function Dashboard() {
                 description: "Ve preparando la transferencia.",
             });
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (!mounted || !boss || !rentInfo) return null;
@@ -124,10 +153,13 @@ export default function Dashboard() {
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-400">Meta Mensual</span>
-                                <span className="text-white font-mono">$32,000</span>
+                                <span className="text-white font-mono">${RENT_GOAL.toLocaleString()}</span>
                             </div>
-                            <Progress value={33} className="h-2 bg-gray-800" />
-                            <p className="text-xs text-right text-cyan-400">En progreso...</p>
+                            <Progress value={rentProgress} className="h-2 bg-gray-800" />
+                            <div className="flex justify-between text-xs">
+                                <span className="text-gray-500">Recaudado: ${rentCollected.toLocaleString()}</span>
+                                <span className="text-cyan-400">{rentProgress.toFixed(1)}%</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -184,7 +216,7 @@ export default function Dashboard() {
                                 <div className="flex justify-between items-end">
                                     <div>
                                         <p className="text-sm text-gray-400">Total Acumulado</p>
-                                        <p className="text-3xl font-bold font-heading text-white">$1,500</p>
+                                        <p className="text-3xl font-bold font-heading text-white">${commonBoxTotal.toLocaleString()}</p>
                                     </div>
                                     <Badge variant="success">Meta Alcanzada</Badge>
                                 </div>
@@ -219,25 +251,29 @@ export default function Dashboard() {
 
                 {/* Quick Actions */}
                 <motion.div variants={item} className="md:col-span-1">
-                    <Card className="h-full bg-white/5 border-dashed border-white/10">
-                        <CardHeader>
-                            <CardTitle className="text-lg text-white">Acciones Rápidas</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            <Link href="/finance" className="block">
-                                <Button className="w-full justify-between group" variant="secondary">
-                                    Registrar Pago
-                                    <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </Button>
-                            </Link>
-                            <Link href="/manifesto" className="block">
-                                <Button className="w-full justify-between group" variant="ghost">
-                                    Leer Manifiesto
-                                    <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </Button>
-                            </Link>
-                        </CardContent>
-                    </Card>
+                    <div className="space-y-6 h-full">
+                        <Card className="bg-white/5 border-dashed border-white/10">
+                            <CardHeader>
+                                <CardTitle className="text-lg text-white">Acciones Rápidas</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                <Link href="/finance" className="block">
+                                    <Button className="w-full justify-between group" variant="secondary">
+                                        Registrar Pago
+                                        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </Button>
+                                </Link>
+                                <Link href="/manifesto" className="block">
+                                    <Button className="w-full justify-between group" variant="ghost">
+                                        Leer Manifiesto
+                                        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </Button>
+                                </Link>
+                            </CardContent>
+                        </Card>
+
+                        <ActivityFeed />
+                    </div>
                 </motion.div>
             </div>
         </motion.div>
