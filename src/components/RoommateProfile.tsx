@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/components/AuthProvider";
 import { Pencil } from "lucide-react";
+import AnnualRentTracker from "./AnnualRentTracker";
 
 export default function RoommateProfile({ roomie }: RoommateProfileProps) {
     const { roomie: currentRoomie } = useAuth();
@@ -197,35 +198,11 @@ export default function RoommateProfile({ roomie }: RoommateProfileProps) {
                         <p className="text-xl font-bold text-white">{stats.paymentsOnTime}</p>
                     </div>
                 </div>
-            </CardContent>
 
-            {/* Action Overlay */}
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 z-20">
-                <Button
-                    variant="secondary"
-                    size="sm"
-                    className="rounded-full"
-                    onClick={() => {
-                        toast.success(`¡Zumbido enviado a ${roomie.name}! 🐝`, {
-                            description: "Le recordamos que revise la app."
-                        });
-                    }}
-                >
-                    Zumbido
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-full border-white/20 text-white hover:bg-white/10"
-                    onClick={() => {
-                        toast.info(`Perfil detallado de ${roomie.name}`, {
-                            description: "Próximamente: Historial completo y medallas."
-                        });
-                    }}
-                >
-                    Ver Detalles
-                </Button>
-            </div>
+                <div className="pt-4">
+                    <AnnualRentTracker roomie={roomie} />
+                </div>
+            </CardContent>
         </Card >
     );
 }
