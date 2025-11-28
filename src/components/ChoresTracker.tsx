@@ -2,19 +2,34 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { Trash2, CheckCircle2, Plus, AlertCircle, Utensils, Sparkles } from "lucide-react";
+import { ROOMIES } from "@/lib/bossLogic";
+import { Trash2, CheckCircle2, AlertCircle, Utensils, Sparkles, Calendar, User, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Chore } from "@/types";
+import { useAuth } from "@/components/AuthProvider";
+import ChoreForm from "@/components/ChoreForm";
+import { formatDistanceToNow } from "date-fns";
+import { es } from "date-fns/locale";
+import { toast } from "sonner";
 
 export default function ChoresTracker() {
+  const { roomie } = useAuth();
   const [chores, setChores] = useState<Chore[]>([]);
-  const [newChore, setNewChore] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "mine" | string>("all");
+  const [sortBy, setSortBy] = useState<"priority" | "due_date" | "created">("due_date");
+
+  const fetchChores = async () => {
+    try {
+      const { data } = await supabase.from('chores').select('*').order('created_at', { ascending: false });
+      if (data) setChores(data as Chore[]);
+    } catch (error) {
+      console.error("Error fetching chores", error);
+    }
+  };
 
   useEffect(() => {
     fetchChores();
@@ -32,47 +47,156 @@ export default function ChoresTracker() {
     return () => {
       supabase.removeChannel(channel);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchChores = async () => {
+  const addChore = async (choreData: {
+    task: string;
+    assigned_to: string;
+    due_date?: string;
+    priority: 'low' | 'medium' | 'high';
+    recurring: 'none' | 'daily' | 'weekly' | 'monthly';
+  }) => {
     try {
-      const { data, error } = await supabase.from('chores').select('*').order('created_at', { ascending: false });
-      if (data) setChores(data as Chore[]);
+      const { error } = await supabase.from('chores').insert([{
+        task: choreData.task,
+        completed: false,
+        assigned_to: choreData.assigned_to,
+        due_date: choreData.due_date || null,
+        priority: choreData.priority,
+        recurring: choreData.recurring
+      }]);
+
+      if (error) {
+        console.error("Supabase insert error:", error);
+        toast.error(`Error al agregar tarea: ${error.message}`);
+        return;
+      }
+
+      toast.success("Tarea agregada");
+      fetchChores();
     } catch (error) {
-      console.error("Error fetching chores", error);
-    } finally {
-      setLoading(false);
+      console.error("Unexpected error adding chore:", error);
+      toast.error("Error inesperado al agregar tarea");
     }
   };
 
-  const addChore = async () => {
-    if (!newChore.trim()) return;
-    try {
-      await supabase.from('chores').insert([{ task: newChore, completed: false }]);
-      setNewChore("");
-      fetchChores();
-    } catch (error) {
-      alert("Error al agregar tarea");
-    }
-  };
+  const toggleChore = async (id: number, currentCompletedStatus: boolean) => {
+    const chore = chores.find(c => c.id === id);
+    if (!chore) return;
 
-  const toggleChore = async (id: number, completed: boolean) => {
+    const newCompletedStatus = !currentCompletedStatus;
+
     try {
-      await supabase.from('chores').update({ completed: !completed }).eq('id', id);
+      const { error } = await supabase.from('chores').update({
+        completed: newCompletedStatus,
+        completed_at: newCompletedStatus ? new Date().toISOString() : null,
+        completed_by: newCompletedStatus ? roomie?.id : null
+      }).eq('id', id);
+
+      if (error) {
+        console.error("Supabase update error:", error);
+        toast.error(`Error al actualizar tarea: ${error.message}`);
+        return;
+      }
+
+      // Handle Recurring Logic
+      if (newCompletedStatus && chore.recurring && chore.recurring !== 'none') {
+        let newDueDate = new Date();
+        // If it had a due date, base next one on that? Or on today?
+        // Usually better to base on today (completion date) to avoid stacking overdue tasks, 
+        // OR base on original due date to keep schedule strict.
+        // Let's base on TODAY for simplicity and "fresh start" feeling.
+
+        if (chore.recurring === 'daily') newDueDate.setDate(newDueDate.getDate() + 1);
+        if (chore.recurring === 'weekly') newDueDate.setDate(newDueDate.getDate() + 7);
+        if (chore.recurring === 'monthly') newDueDate.setMonth(newDueDate.getMonth() + 1);
+
+        const { error: recurError } = await supabase.from('chores').insert([{
+          task: chore.task,
+          assigned_to: chore.assigned_to,
+          priority: chore.priority,
+          recurring: chore.recurring,
+          due_date: newDueDate.toISOString(),
+          completed: false
+        }]);
+
+        if (recurError) {
+          console.error("Error creating recurring task:", recurError);
+          toast.error("Error al crear tarea recurrente");
+        } else {
+          toast.success("Tarea recurrente programada para la próxima vez");
+        }
+      }
+
       fetchChores();
     } catch (error) {
-      alert("Error al actualizar tarea");
+      console.error("Unexpected error updating chore:", error);
+      toast.error("Error inesperado al actualizar tarea");
     }
   };
 
   const deleteChore = async (id: number) => {
     try {
-      await supabase.from('chores').delete().eq('id', id);
+      const { error } = await supabase.from('chores').delete().eq('id', id);
+
+      if (error) {
+        console.error("Supabase delete error:", error);
+        toast.error(`Error al eliminar tarea: ${error.message}`);
+        return;
+      }
+
+      toast.success("Tarea eliminada");
       fetchChores();
     } catch (error) {
-      alert("Error al eliminar tarea");
+      console.error("Unexpected error deleting chore:", error);
+      toast.error("Error inesperado al eliminar tarea");
     }
   };
+
+  const getPriorityColor = (priority?: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-500/20 text-red-400 border-red-500/30';
+      case 'medium': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'low': return 'bg-green-500/20 text-green-400 border-green-500/30';
+      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    }
+  };
+
+  const getDueDateStatus = (dueDate?: string) => {
+    if (!dueDate) return null;
+    const due = new Date(dueDate);
+    const now = new Date();
+    const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return { text: `Vencida hace ${Math.abs(diffDays)}d`, className: 'text-red-400' };
+    if (diffDays === 0) return { text: 'Vence hoy', className: 'text-orange-400' };
+    if (diffDays <= 3) return { text: `Vence en ${diffDays}d`, className: 'text-yellow-400' };
+    return { text: `Vence en ${diffDays}d`, className: 'text-gray-400' };
+  };
+
+  const getAssignedRoomie = (assignedTo?: string) => {
+    return ROOMIES.find(r => r.id === assignedTo);
+  };
+
+  const filteredChores = chores.filter(chore => {
+    if (filter === "all") return true;
+    if (filter === "mine") return chore.assigned_to === roomie?.id;
+    return chore.assigned_to === filter;
+  });
+
+  const sortedChores = [...filteredChores].sort((a, b) => {
+    if (sortBy === "priority") {
+      const priorityOrder = { high: 0, medium: 1, low: 2, undefined: 3 };
+      return (priorityOrder[a.priority as keyof typeof priorityOrder] || 3) - (priorityOrder[b.priority as keyof typeof priorityOrder] || 3);
+    }
+    if (sortBy === "due_date") {
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+    }
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 
   return (
     <div className="space-y-8">
@@ -89,60 +213,113 @@ export default function ChoresTracker() {
           <TabsTrigger value="rules">Reglas de Cocina</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="tasks" className="mt-6">
+        <TabsContent value="tasks" className="mt-6 space-y-4">
+          <ChoreForm onSubmit={addChore} />
+
+          {/* Filters */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <Filter className="w-4 h-4 text-gray-400" />
+            <Button
+              variant={filter === "all" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setFilter("all")}
+            >
+              Todas
+            </Button>
+            <Button
+              variant={filter === "mine" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setFilter("mine")}
+            >
+              Mis tareas
+            </Button>
+            {ROOMIES.map((r) => (
+              <Button
+                key={r.id}
+                variant={filter === r.id ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setFilter(r.id)}
+              >
+                {r.name}
+              </Button>
+            ))}
+          </div>
+
           <Card>
             <CardHeader>
               <CardTitle>Lista de Pendientes</CardTitle>
               <CardDescription>Mantengamos el depa al 100.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Agregar nueva tarea..."
-                  value={newChore}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewChore(e.target.value)}
-                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && addChore()}
-                />
-                <Button onClick={addChore} size="icon" className="shrink-0 bg-cyan-600 hover:bg-cyan-500">
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-
               <ScrollArea className="h-[400px] pr-4">
                 <div className="space-y-3">
-                  {chores.map((chore) => (
-                    <div
-                      key={chore.id}
-                      className={`group flex items-center justify-between p-4 rounded-xl border transition-all ${chore.completed
-                        ? "bg-emerald-900/10 border-emerald-500/20 opacity-60"
-                        : "bg-white/5 border-white/10 hover:border-white/20"
-                        }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => toggleChore(chore.id, chore.completed)}
-                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${chore.completed
-                            ? "bg-emerald-500 border-emerald-500 text-black"
-                            : "border-gray-500 hover:border-cyan-400"
-                            }`}
-                        >
-                          {chore.completed && <CheckCircle2 className="w-4 h-4" />}
-                        </button>
-                        <span className={`font-medium ${chore.completed ? "line-through text-gray-500" : "text-white"}`}>
-                          {chore.task}
-                        </span>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteChore(chore.id)}
-                        className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                  {sortedChores.map((chore) => {
+                    const assignedRoomie = getAssignedRoomie(chore.assigned_to);
+                    const dueStatus = getDueDateStatus(chore.due_date);
+
+                    return (
+                      <div
+                        key={chore.id}
+                        className={`group flex items-start justify-between p-4 rounded-xl border transition-all ${chore.completed
+                          ? "bg-emerald-900/10 border-emerald-500/20 opacity-60"
+                          : dueStatus?.className.includes('red')
+                            ? "bg-red-900/10 border-red-500/20"
+                            : "bg-white/5 border-white/10 hover:border-white/20"
+                          }`}
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  {chores.length === 0 && (
+                        <div className="flex items-start gap-3 flex-1">
+                          <button
+                            onClick={() => toggleChore(chore.id, chore.completed)}
+                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors flex-shrink-0 mt-1 ${chore.completed
+                              ? "bg-emerald-500 border-emerald-500 text-black"
+                              : "border-gray-500 hover:border-cyan-400"
+                              }`}
+                          >
+                            {chore.completed && <CheckCircle2 className="w-4 h-4" />}
+                          </button>
+
+                          <div className="flex-1 space-y-2">
+                            <span className={`font-medium block ${chore.completed ? "line-through text-gray-500" : "text-white"}`}>
+                              {chore.task}
+                            </span>
+
+                            <div className="flex flex-wrap gap-2">
+                              {assignedRoomie && (
+                                <Badge variant="outline" className="text-xs">
+                                  <User className="w-3 h-3 mr-1" />
+                                  {assignedRoomie.name}
+                                </Badge>
+                              )}
+
+                              {chore.priority && (
+                                <Badge className={`text-xs ${getPriorityColor(chore.priority)}`}>
+                                  {chore.priority === 'high' ? '🔴' : chore.priority === 'medium' ? '🟡' : '🟢'}
+                                  {chore.priority.charAt(0).toUpperCase() + chore.priority.slice(1)}
+                                </Badge>
+                              )}
+
+                              {dueStatus && (
+                                <Badge variant="outline" className={`text-xs ${dueStatus.className}`}>
+                                  <Calendar className="w-3 h-3 mr-1" />
+                                  {dueStatus.text}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteChore(chore.id)}
+                          className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 hover:bg-red-900/20 flex-shrink-0"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                  {sortedChores.length === 0 && (
                     <div className="text-center py-12 text-gray-500">
                       <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-20" />
                       <p>¡Todo limpio! Disfruten la vibra alta.</p>

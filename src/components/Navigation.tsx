@@ -34,6 +34,7 @@ export default function Navigation() {
                                 src="/logo.png"
                                 alt="Logo"
                                 fill
+                                sizes="32px"
                                 className="object-cover"
                             />
                         </div>

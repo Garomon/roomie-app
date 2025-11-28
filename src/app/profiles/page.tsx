@@ -1,12 +1,18 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ROOMIES } from "@/lib/bossLogic";
+import { useRoomies } from "@/hooks/useRoomies";
 import RoommateProfile from "@/components/RoommateProfile";
 import { Badge } from "@/components/ui/badge";
 import { Users } from "lucide-react";
 
 export default function ProfilesPage() {
+    const { roomies, loading } = useRoomies();
+
+    if (loading) {
+        return <div className="text-white text-center">Cargando perfiles...</div>;
+    }
+
     return (
         <div className="space-y-8">
             <div className="text-center space-y-4">
@@ -23,7 +29,7 @@ export default function ProfilesPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {ROOMIES.map((roomie, index) => (
+                {roomies.map((roomie, index) => (
                     <motion.div
                         key={roomie.id}
                         initial={{ opacity: 0, y: 20 }}

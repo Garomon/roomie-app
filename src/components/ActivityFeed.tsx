@@ -23,9 +23,7 @@ export default function ActivityFeed() {
     const [activities, setActivities] = useState<ActivityItem[]>([]);
 
     useEffect(() => {
-        // Initial fetch (mock for now, or fetch from a unified view if it existed)
-        // For now, we'll just listen to new events to populate the feed live
-        // In a real app, we'd fetch the last 10 events from a DB view.
+        fetchInitialActivity();
 
         const channel = supabase
             .channel('roomie-activity')
@@ -49,14 +47,28 @@ export default function ActivityFeed() {
                 'postgres_changes',
                 { event: 'UPDATE', schema: 'public', table: 'chores', filter: 'completed=eq.true' },
                 (payload) => {
-                    // Note: Chores table might not have user_id if it's generic, 
-                    // but assuming we might add it or just show "Tarea Completada"
                     const newActivity: ActivityItem = {
                         id: `chore-${payload.new.id}`,
                         type: 'chore',
-                        user_id: 'unknown', // or fetch from payload if available
+                        user_id: payload.new.assigned_to || 'unknown',
                         title: 'Tarea Completada',
                         description: `"${payload.new.task}" fue marcada como lista`,
+                        created_at: new Date().toISOString()
+                    };
+                    addActivity(newActivity);
+                }
+            )
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'expenses' },
+                (payload) => {
+                    const roomie = ROOMIES.find(r => r.id === payload.new.paid_by);
+                    const newActivity: ActivityItem = {
+                        id: `exp-${payload.new.id}`,
+                        type: 'manifesto', // Reusing icon for generic expense
+                        user_id: payload.new.paid_by,
+                        title: 'Nuevo Gasto',
+                        description: `${roomie?.name.split(' ')[0]} registró: ${payload.new.description}`,
                         created_at: new Date().toISOString()
                     };
                     addActivity(newActivity);
@@ -68,6 +80,63 @@ export default function ActivityFeed() {
             supabase.removeChannel(channel);
         };
     }, []);
+
+    const fetchInitialActivity = async () => {
+        // Fetch last 5 payments
+        const { data: payments } = await supabase
+            .from('payments')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        // Fetch last 5 completed chores
+        const { data: chores } = await supabase
+            .from('chores')
+            .select('*')
+            .eq('completed', true)
+            .order('completed_at', { ascending: false })
+            .limit(5);
+
+        // Fetch last 5 expenses
+        const { data: expenses } = await supabase
+            .from('expenses')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        const paymentActivities: ActivityItem[] = (payments || []).map(p => ({
+            id: `pay-${p.id}`,
+            type: 'payment',
+            user_id: p.roomie_id,
+            title: 'Pago Registrado',
+            description: `${ROOMIES.find(r => r.id === p.roomie_id)?.name.split(' ')[0]} pagó $${p.amount}`,
+            created_at: p.created_at
+        }));
+
+        const choreActivities: ActivityItem[] = (chores || []).map(c => ({
+            id: `chore-${c.id}`,
+            type: 'chore',
+            user_id: c.assigned_to || 'unknown',
+            title: 'Tarea Completada',
+            description: `"${c.task}" fue marcada como lista`,
+            created_at: c.completed_at || c.created_at
+        }));
+
+        const expenseActivities: ActivityItem[] = (expenses || []).map(e => ({
+            id: `exp-${e.id}`,
+            type: 'manifesto',
+            user_id: e.paid_by,
+            title: 'Nuevo Gasto',
+            description: `${ROOMIES.find(r => r.id === e.paid_by)?.name.split(' ')[0]} registró: ${e.description}`,
+            created_at: e.created_at
+        }));
+
+        const allActivities = [...paymentActivities, ...choreActivities, ...expenseActivities]
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            .slice(0, 10);
+
+        setActivities(allActivities);
+    };
 
     const addActivity = (activity: ActivityItem) => {
         setActivities(prev => [activity, ...prev].slice(0, 10));
@@ -82,50 +151,52 @@ export default function ActivityFeed() {
     };
 
     return (
-        <Card className="h-full bg-white/5 border-white/10">
+        <Card className="h-full bg-white/5 border-white/10 flex flex-col">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                     <Activity className="w-5 h-5 text-purple-400" />
                     Actividad Reciente
                 </CardTitle>
             </CardHeader>
-            <CardContent>
-                <ScrollArea className="h-[300px] pr-4">
-                    <div className="space-y-4">
-                        <AnimatePresence initial={false}>
-                            {activities.length === 0 ? (
-                                <div className="text-center text-gray-500 py-8 text-sm">
-                                    Esperando actividad en tiempo real...
-                                </div>
-                            ) : (
-                                activities.map((item) => {
-                                    return (
-                                        <motion.div
-                                            key={item.id}
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            exit={{ opacity: 0, height: 0 }}
-                                            className="flex gap-3 items-start pb-4 border-b border-white/5 last:border-0"
-                                        >
-                                            <div className="mt-1 p-1.5 rounded-full bg-white/5 border border-white/10">
-                                                {getIcon(item.type)}
-                                            </div>
-                                            <div className="flex-1 space-y-1">
-                                                <div className="flex justify-between items-start">
-                                                    <p className="text-sm font-medium text-white">{item.title}</p>
-                                                    <span className="text-[10px] text-gray-500">
-                                                        {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: es })}
-                                                    </span>
+            <CardContent className="flex-1 min-h-0 p-0 relative">
+                <div className="absolute inset-0">
+                    <ScrollArea className="h-full w-full pr-4">
+                        <div className="space-y-4 w-full max-w-full overflow-x-hidden">
+                            <AnimatePresence initial={false}>
+                                {activities.length === 0 ? (
+                                    <div className="text-center text-gray-500 py-8 text-sm">
+                                        Esperando actividad en tiempo real...
+                                    </div>
+                                ) : (
+                                    activities.map((item) => {
+                                        return (
+                                            <motion.div
+                                                key={item.id}
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                className="flex gap-3 items-start pb-4 border-b border-white/5 last:border-0"
+                                            >
+                                                <div className="mt-1 p-1.5 rounded-full bg-white/5 border border-white/10">
+                                                    {getIcon(item.type)}
                                                 </div>
-                                                <p className="text-xs text-gray-400">{item.description}</p>
-                                            </div>
-                                        </motion.div>
-                                    );
-                                })
-                            )}
-                        </AnimatePresence>
-                    </div>
-                </ScrollArea>
+                                                <div className="flex-1 space-y-1">
+                                                    <div className="flex justify-between items-start">
+                                                        <p className="text-sm font-medium text-white">{item.title}</p>
+                                                        <span className="text-[10px] text-gray-500">
+                                                            {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: es })}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-gray-400">{item.description}</p>
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    })
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </ScrollArea>
+                </div>
             </CardContent>
         </Card>
     );

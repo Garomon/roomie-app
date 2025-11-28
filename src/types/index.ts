@@ -5,6 +5,7 @@ export interface Roomie {
     hasCloset: boolean;
     color: string;
     avatar: string;
+    email?: string;
 }
 
 export interface Payment {
@@ -22,9 +23,33 @@ export interface Chore {
     task: string;
     completed: boolean;
     created_at: string;
+    assigned_to?: string;
+    due_date?: string;
+    completed_at?: string;
+    completed_by?: string;
+    recurring?: 'none' | 'daily' | 'weekly' | 'monthly';
+    priority?: 'low' | 'medium' | 'high';
 }
 
 export interface RentInfo {
     daysLeft: number;
     dueDate: Date;
+}
+
+export interface Expense {
+    id: number;
+    created_at: string;
+    description: string;
+    amount: number;
+    paid_by: string;
+    date: string;
+    category: 'food' | 'services' | 'fun' | 'other';
+}
+
+export interface ExpenseSplit {
+    id: number;
+    expense_id: number;
+    owed_by: string;
+    amount: number;
+    is_paid: boolean;
 }

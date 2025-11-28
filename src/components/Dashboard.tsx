@@ -14,6 +14,7 @@ import { Roomie } from "@/types";
 import { toast } from "sonner";
 import ActivityFeed from "@/components/ActivityFeed";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function Dashboard() {
     const [boss, setCurrentBoss] = useState<Roomie | null>(null);
@@ -21,6 +22,11 @@ export default function Dashboard() {
     const [commonBoxTotal, setCommonBoxTotal] = useState(0);
     const [rentCollected, setRentCollected] = useState(0);
     const [mounted, setMounted] = useState(false);
+    const [hasPaidRent, setHasPaidRent] = useState(false);
+
+    const { roomie: currentRoomie } = useAuth();
+    const [myPendingChores, setMyPendingChores] = useState(0);
+    const [myDebt, setMyDebt] = useState(0);
 
     const RENT_GOAL = 32000;
     const rentProgress = (rentCollected / RENT_GOAL) * 100;
@@ -34,46 +40,93 @@ export default function Dashboard() {
         setMounted(true);
 
         const fetchFinancials = async () => {
-            const currentMonth = new Date().toISOString().slice(0, 8) + '01';
+            const now = new Date();
+            const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
 
-            // Fetch Rent Payments
+            console.log("Checking rent for:", currentRoomie?.id, "Month:", currentMonthStr);
+
+            // 1. Fetch Total Rent Collected
             const { data: rentPayments } = await supabase
                 .from('payments')
                 .select('amount')
                 .eq('type', 'rent')
-                .eq('month_date', currentMonth);
+                .ilike('month_date', `${currentMonthStr}%`);
 
             const totalRent = rentPayments?.reduce((sum, p) => sum + p.amount, 0) || 0;
             setRentCollected(totalRent);
 
-            // Fetch Common Box
+            // 2. Fetch Common Box
             const { data: poolPayments } = await supabase
                 .from('payments')
                 .select('amount')
-                .eq('type', 'pool');
+                .eq('type', 'pool')
+                .ilike('month_date', `${currentMonthStr}%`);
 
             const totalPool = poolPayments?.reduce((sum, p) => sum + p.amount, 0) || 0;
             setCommonBoxTotal(totalPool);
+
+            // 3. Check if *I* have paid rent this month
+            if (currentRoomie) {
+                const { data: myPayments } = await supabase
+                    .from('payments')
+                    .select('*')
+                    .eq('type', 'rent')
+                    .eq('roomie_id', currentRoomie.id);
+
+                const paidThisMonth = myPayments?.some(p => {
+                    if (!p.month_date) return false;
+                    return p.month_date.includes(currentMonthStr);
+                });
+
+                console.log("Has paid rent?", paidThisMonth);
+                setHasPaidRent(!!paidThisMonth);
+
+                fetchUserData(currentRoomie.id);
+            }
         };
 
         fetchFinancials();
 
-        // Smart Alert System
-        if (rent.urgency === 'critical') {
-            toast.error(`¡Atención! Faltan ${rent.daysLeft} días para la renta.`, {
-                description: "Evita ser el roomie moroso. Paga hoy.",
-                duration: 5000,
-            });
-        } else if (rent.urgency === 'warning') {
-            toast.warning(`Recordatorio: La renta vence en ${rent.daysLeft} días.`, {
-                description: "Ve preparando la transferencia.",
-            });
-        }
-    }, []);
+        const channel = supabase
+            .channel('dashboard_payments')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'payments' },
+                () => {
+                    console.log("Payment change detected, refreshing dashboard...");
+                    fetchFinancials();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [currentRoomie]);
+
+    const fetchUserData = async (userId: string) => {
+        const { count: choresCount } = await supabase
+            .from('chores')
+            .select('*', { count: 'exact', head: true })
+            .eq('assigned_to', userId)
+            .eq('completed', false);
+
+        setMyPendingChores(choresCount || 0);
+
+        const { data: debts } = await supabase
+            .from('expense_splits')
+            .select('amount')
+            .eq('owed_by', userId)
+            .eq('is_paid', false);
+
+        const totalDebt = debts?.reduce((sum, d) => sum + d.amount, 0) || 0;
+        setMyDebt(totalDebt);
+    };
 
     if (!mounted || !boss || !rentInfo) return null;
 
     const getUrgencyColor = (urgency: string) => {
+        if (hasPaidRent) return 'text-emerald-400';
         switch (urgency) {
             case 'critical': return 'text-rose-500';
             case 'warning': return 'text-amber-500';
@@ -82,6 +135,7 @@ export default function Dashboard() {
     };
 
     const getUrgencyBg = (urgency: string) => {
+        if (hasPaidRent) return 'bg-emerald-500/10 border-emerald-500/20';
         switch (urgency) {
             case 'critical': return 'bg-rose-500/10 border-rose-500/20';
             case 'warning': return 'bg-amber-500/10 border-amber-500/20';
@@ -123,10 +177,12 @@ export default function Dashboard() {
                             Vibra Alta
                         </Badge>
                         <h1 className="text-4xl md:text-6xl font-bold font-heading text-white mb-2 tracking-tight">
-                            Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">Roomie</span>
+                            Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">{currentRoomie?.name || 'Roomie'}</span> (V3)
                         </h1>
                         <p className="text-gray-400 text-lg max-w-md">
-                            Bienvenido al centro de comando del Depto 3. Aquí gestionamos el caos con estilo.
+                            {myPendingChores > 0
+                                ? `Tienes ${myPendingChores} tareas pendientes y debes $${myDebt.toFixed(0)}.`
+                                : "Todo al día. ¡Eres el MVP del departamento!"}
                         </p>
                     </div>
 
@@ -177,24 +233,24 @@ export default function Dashboard() {
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
                                 <Clock className={`w-4 h-4 ${getUrgencyColor(rentInfo.urgency)}`} />
-                                Tiempo Restante
+                                {hasPaidRent ? "Estatus Renta" : "Tiempo Restante"}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="flex items-baseline gap-2">
                                 <span className={`text-4xl font-bold font-heading ${getUrgencyColor(rentInfo.urgency)}`}>
-                                    {rentInfo.daysLeft}
+                                    {hasPaidRent ? "PAGADO" : rentInfo.daysLeft}
                                 </span>
-                                <span className="text-gray-400">días</span>
+                                {!hasPaidRent && <span className="text-gray-400">días</span>}
                             </div>
                             <p className="text-sm text-gray-500 mt-1">
-                                {rentInfo.statusMessage}
+                                {hasPaidRent ? "¡Ya pagaste! Todo cool." : rentInfo.statusMessage}
                             </p>
                             <div className="mt-4 h-2 bg-black/20 rounded-full overflow-hidden">
                                 <motion.div
-                                    className={`h-full ${rentInfo.urgency === 'critical' ? 'bg-rose-500' : rentInfo.urgency === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                                    className={`h-full ${hasPaidRent ? 'bg-emerald-500' : rentInfo.urgency === 'critical' ? 'bg-rose-500' : rentInfo.urgency === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'}`}
                                     initial={{ width: 0 }}
-                                    animate={{ width: `${Math.max(0, Math.min(100, (rentInfo.daysLeft / 30) * 100))}%` }}
+                                    animate={{ width: hasPaidRent ? "100%" : `${Math.max(0, Math.min(100, (rentInfo.daysLeft / 30) * 100))}%` }}
                                     transition={{ duration: 1, delay: 0.5 }}
                                 />
                             </div>
@@ -215,22 +271,21 @@ export default function Dashboard() {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-end">
                                     <div>
-                                        <p className="text-sm text-gray-400">Total Acumulado</p>
-                                        <p className="text-3xl font-bold font-heading text-white">${commonBoxTotal.toLocaleString()}</p>
+                                        <p className="text-2xl font-bold text-white">${commonBoxTotal.toLocaleString()}</p>
+                                        <p className="text-sm text-gray-500">Total acumulado este mes</p>
                                     </div>
-                                    <Badge variant="success">Meta Alcanzada</Badge>
                                 </div>
 
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-xs text-gray-400">
                                         <span>Progreso ($500 x 3)</span>
-                                        <span>100%</span>
+                                        <span>{((commonBoxTotal / 1500) * 100).toFixed(0)}%</span>
                                     </div>
                                     <div className="h-3 bg-black/20 rounded-full overflow-hidden border border-white/5">
                                         <motion.div
                                             className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500"
                                             initial={{ width: 0 }}
-                                            animate={{ width: "100%" }}
+                                            animate={{ width: `${Math.min(100, (commonBoxTotal / 1500) * 100)}%` }}
                                             transition={{ duration: 1.5, ease: "easeOut" }}
                                         />
                                     </div>
@@ -250,28 +305,28 @@ export default function Dashboard() {
                 </motion.div>
 
                 {/* Quick Actions */}
-                <motion.div variants={item} className="md:col-span-1">
-                    <div className="space-y-6 h-full">
-                        <Card className="bg-white/5 border-dashed border-white/10">
-                            <CardHeader>
-                                <CardTitle className="text-lg text-white">Acciones Rápidas</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                <Link href="/finance" className="block">
-                                    <Button className="w-full justify-between group" variant="secondary">
-                                        Registrar Pago
-                                        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </Button>
-                                </Link>
-                                <Link href="/manifesto" className="block">
-                                    <Button className="w-full justify-between group" variant="ghost">
-                                        Leer Manifiesto
-                                        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </Button>
-                                </Link>
-                            </CardContent>
-                        </Card>
+                <motion.div variants={item} className="md:col-span-1 flex flex-col h-full gap-6">
+                    <Card className="bg-white/5 border-dashed border-white/10 flex-none">
+                        <CardHeader>
+                            <CardTitle className="text-lg text-white">Acciones Rápidas</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            <Link href="/finance" className="block">
+                                <Button className="w-full justify-between group" variant="secondary">
+                                    Registrar Pago
+                                    <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </Button>
+                            </Link>
+                            <Link href="/manifesto" className="block">
+                                <Button className="w-full justify-between group" variant="ghost">
+                                    Leer Manifiesto
+                                    <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </Button>
+                            </Link>
+                        </CardContent>
+                    </Card>
 
+                    <div className="h-[300px] min-h-0">
                         <ActivityFeed />
                     </div>
                 </motion.div>

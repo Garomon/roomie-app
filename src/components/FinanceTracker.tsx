@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ROOMIES, getBossOfTheMonth } from "@/lib/bossLogic";
-import { DollarSign, CheckCircle2, ArrowUpRight, Sparkles } from "lucide-react";
+import { DollarSign, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -14,26 +14,46 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Payment, Roomie } from "@/types";
 import confetti from "canvas-confetti";
+import { useAuth } from "@/components/AuthProvider";
+import SharedExpenses from "./SharedExpenses";
+import PaymentHistory from "./PaymentHistory";
+import dynamic from 'next/dynamic';
+
+const FinanceCharts = dynamic(() => import('./FinanceCharts'), { ssr: false });
 
 export default function FinanceTracker() {
+    const { roomie: currentRoomie } = useAuth();
     const [payments, setPayments] = useState<Payment[]>([]);
-    const [loading, setLoading] = useState(true);
     const [serviceTotal, setServiceTotal] = useState("");
     const [boss, setBoss] = useState<Roomie | null>(null);
 
     useEffect(() => {
         fetchPayments();
         setBoss(getBossOfTheMonth());
+
+        const channel = supabase
+            .channel('payments_changes')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'payments' },
+                (payload) => {
+                    console.log('Change received!', payload);
+                    fetchPayments();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     const fetchPayments = async () => {
         try {
-            const { data, error } = await supabase.from('payments').select('*');
+            const { data } = await supabase.from('payments').select('*');
             if (data) setPayments(data as Payment[]);
         } catch (error) {
             console.error("Error fetching payments", error);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -91,11 +111,26 @@ export default function FinanceTracker() {
             </div>
 
             <Tabs defaultValue="rent" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-black/40 border border-white/10">
-                    <TabsTrigger value="rent">Renta Mensual</TabsTrigger>
-                    <TabsTrigger value="services">Servicios (1/3)</TabsTrigger>
-                    <TabsTrigger value="pool">Caja Común</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 bg-black/40 border border-white/10 h-auto md:h-10">
+                    <TabsTrigger value="rent">Renta</TabsTrigger>
+                    <TabsTrigger value="services">Servicios</TabsTrigger>
+                    <TabsTrigger value="pool">Caja</TabsTrigger>
+                    <TabsTrigger value="shared">Compartidos</TabsTrigger>
+                    <TabsTrigger value="history">Historial</TabsTrigger>
+                    <TabsTrigger value="charts">Gráficos</TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="charts" className="mt-6">
+                    <FinanceCharts />
+                </TabsContent>
+
+                <TabsContent value="history" className="mt-6">
+                    <PaymentHistory />
+                </TabsContent>
+
+                <TabsContent value="shared" className="mt-6">
+                    <SharedExpenses />
+                </TabsContent>
 
                 <TabsContent value="rent" className="mt-6 space-y-6">
                     <Card>
@@ -143,7 +178,7 @@ export default function FinanceTracker() {
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    {!status && (
+                                                    {!status && currentRoomie?.id === roomie.id && (
                                                         <Button
                                                             size="sm"
                                                             variant="ghost"
@@ -189,7 +224,7 @@ export default function FinanceTracker() {
                                                 <Badge variant="success" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
                                                     Pagado
                                                 </Badge>
-                                            ) : (
+                                            ) : currentRoomie?.id === roomie.id ? (
                                                 <Button
                                                     size="sm"
                                                     variant="secondary"
@@ -197,6 +232,8 @@ export default function FinanceTracker() {
                                                 >
                                                     Pagar $500
                                                 </Button>
+                                            ) : (
+                                                <span className="text-xs text-gray-500">Pendiente</span>
                                             )}
                                         </div>
                                     );
@@ -236,8 +273,6 @@ export default function FinanceTracker() {
 
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         {ROOMIES.map((roomie) => {
-                                            // For services, we might want a different tracking or just use 'pool' as generic shared expense?
-                                            // For now, let's keep the UI simple as a calculator
                                             return (
                                                 <div key={roomie.id} className="p-4 rounded-xl bg-black/20 border border-white/5 flex flex-col items-center text-center gap-2">
                                                     <Avatar className="h-12 w-12 border-2 border-white/10">
@@ -252,6 +287,63 @@ export default function FinanceTracker() {
                                             );
                                         })}
                                     </div>
+
+                                    <Button
+                                        className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
+                                        onClick={async () => {
+                                            if (!serviceTotal || parseFloat(serviceTotal) <= 0) {
+                                                alert("Ingresa un monto válido");
+                                                return;
+                                            }
+
+                                            try {
+                                                // 1. Create Expense
+                                                const { data: expense, error: expenseError } = await supabase
+                                                    .from('expenses')
+                                                    .insert([{
+                                                        description: "Pago de Servicios (Luz/Agua/Internet)",
+                                                        amount: parseFloat(serviceTotal),
+                                                        paid_by: currentRoomie?.id,
+                                                        date: new Date().toISOString(),
+                                                        category: 'services'
+                                                    }])
+                                                    .select()
+                                                    .single();
+
+                                                if (expenseError) throw expenseError;
+
+                                                // 2. Create Splits
+                                                const splitAmount = parseFloat(serviceTotal) / 3;
+                                                const splits = ROOMIES.filter(r => r.id !== currentRoomie?.id).map(r => ({
+                                                    expense_id: expense.id,
+                                                    owed_by: r.id,
+                                                    amount: splitAmount,
+                                                    is_paid: false
+                                                }));
+
+                                                const { error: splitError } = await supabase
+                                                    .from('expense_splits')
+                                                    .insert(splits);
+
+                                                if (splitError) throw splitError;
+
+                                                confetti({
+                                                    particleCount: 100,
+                                                    spread: 70,
+                                                    origin: { y: 0.6 },
+                                                    colors: ['#06B6D4', '#10B981', '#A855F7']
+                                                });
+
+                                                setServiceTotal("");
+                                                alert("Recibo registrado y dividido exitosamente");
+                                            } catch (error: any) {
+                                                console.error(error);
+                                                alert("Error al registrar recibo: " + error.message);
+                                            }
+                                        }}
+                                    >
+                                        Registrar y Dividir Recibo
+                                    </Button>
 
                                     <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
                                         <h4 className="font-bold text-purple-400 mb-2 flex items-center gap-2">

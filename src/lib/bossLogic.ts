@@ -3,19 +3,21 @@ import { Roomie, RentInfo } from "@/types";
 export const ROOMIES: Roomie[] = [
     {
         id: "alejandro",
-        name: "Alejandro",
+        name: "Dora",
         rent: 7000,
         hasCloset: false,
         color: "from-blue-500 to-cyan-500",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alejandro"
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alejandro",
+        email: "alejandro@example.com"
     },
     {
         id: "edgardo",
-        name: "Edgardo",
+        name: "Garo",
         rent: 14500,
         hasCloset: true,
         color: "from-purple-500 to-pink-500",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Edgardo"
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Edgardo",
+        email: "edgardo@example.com"
     },
     {
         id: "james",
@@ -23,7 +25,8 @@ export const ROOMIES: Roomie[] = [
         rent: 10500,
         hasCloset: true,
         color: "from-orange-500 to-red-500",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=James"
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=James",
+        email: "james@example.com"
     }
 ];
 
@@ -68,12 +71,6 @@ export function getDaysUntilRentDue(): RentStatus {
         dueDate = new Date(currentYear, currentMonth, lastDay);
     }
 
-    // If today is past the 30th, the due date was this month (overdue) or next month?
-    // The manifesto says "Pago al Boss dia 30".
-    // If it's the 31st, it's technically overdue for the current month, or we start counting for next?
-    // Let's assume if we are past the 25th, we are looking at the current month's deadline.
-    // If we are past the 30th (e.g. 31st), we are overdue.
-
     // Logic: 
     // If today <= 30: Due date is this month's 30.
     // If today > 30: Due date is NEXT month's 30.
@@ -107,4 +104,14 @@ export function getDaysUntilRentDue(): RentStatus {
         urgency,
         statusMessage
     };
+}
+
+/**
+ * Calculates the reliability score (0-100) based on performance.
+ * Formula: 100 - (Overdue Chores * 5)
+ * Future: Add late payments penalty
+ */
+export function calculateReliabilityScore(overdueChores: number): number {
+    const score = 100 - (overdueChores * 5);
+    return Math.max(0, Math.min(100, score));
 }
