@@ -42,3 +42,9 @@ next-env.d.ts
 
 .vercel
 .env*.local
+
+# debug files
+debug_*.js
+debug_*.ts
+lint_*.txt
+test_logic.ts

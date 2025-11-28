@@ -230,7 +230,7 @@ export default function Dashboard() {
                             Vibra Alta
                         </Badge>
                         <h1 className="text-4xl md:text-6xl font-bold font-heading text-white mb-2 tracking-tight">
-                            Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">{currentRoomie?.name || 'Roomie'}</span> (V5.2)
+                            Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">{currentRoomie?.name || 'Roomie'}</span> (V6)
                         </h1>
                         <p className="text-gray-400 text-lg max-w-md">
                             {myPendingChores > 0
@@ -388,17 +388,6 @@ export default function Dashboard() {
                 </motion.div>
             </div>
 
-            {/* DEBUG OVERLAY - REMOVE BEFORE PRODUCTION */}
-            <div className="fixed bottom-4 right-4 bg-black/80 text-xs text-green-400 p-4 rounded border border-green-500/30 max-w-sm z-50 font-mono">
-                <p className="font-bold border-b border-green-500/30 mb-2">DEBUG INFO (V5.2)</p>
-                <p>Current Roomie: {currentRoomie?.id}</p>
-                <p>Month Filter: {new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0')}</p>
-                <p>Rent Collected: ${rentCollected}</p>
-                <p>Pool Total: ${commonBoxTotal}</p>
-                <p>Paid Pool IDs: {paidPoolRoomies.join(', ') || 'None'}</p>
-                <p>Has Paid Rent: {hasPaidRent ? 'YES' : 'NO'}</p>
-                {debugError && <p className="text-red-500 font-bold mt-2">ERROR: {debugError}</p>}
-            </div>
         </motion.div>
     );
 }

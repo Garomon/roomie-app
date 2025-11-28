@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Home, DollarSign, CheckCircle2, FileText, Users, Menu } from "lucide-react";
+import { Home, DollarSign, CheckCircle2, FileText, Users, Menu, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
@@ -20,6 +20,7 @@ export default function Navigation() {
         { href: "/", label: "Dashboard", icon: Home },
         { href: "/finance", label: "Finanzas", icon: DollarSign },
         { href: "/chores", label: "Tareas", icon: CheckCircle2 },
+        { href: "/analytics", label: "Analytics", icon: BarChart3 },
         { href: "/manifesto", label: "Manifiesto", icon: FileText },
         { href: "/profiles", label: "Perfiles", icon: Users },
     ];
