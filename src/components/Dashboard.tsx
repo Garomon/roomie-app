@@ -47,14 +47,26 @@ export default function Dashboard() {
             const now = new Date();
             const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
 
+            // Calculate date range for the current month
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const startDate = new Date(year, month, 1).toISOString().split('T')[0];
+            const endDate = new Date(year, month + 1, 1).toISOString().split('T')[0];
+
             console.log("Checking rent for:", currentRoomie?.id, "Month:", currentMonthStr);
 
             // 1. Fetch Total Rent Collected
-            const { data: rentPayments } = await supabase
+            const { data: rentPayments, error: rentError } = await supabase
                 .from('payments')
                 .select('amount')
                 .eq('type', 'rent')
-                .ilike('month_date', `${currentMonthStr}%`);
+                .gte('month_date', startDate)
+                .lt('month_date', endDate);
+
+            if (rentError) {
+                console.error("Rent Error:", rentError);
+                setDebugError(rentError.message);
+            }
 
             const totalRent = rentPayments?.reduce((sum, p) => sum + p.amount, 0) || 0;
             setRentCollected(totalRent);
@@ -64,7 +76,8 @@ export default function Dashboard() {
                 .from('payments')
                 .select('amount, roomie_id')
                 .eq('type', 'pool')
-                .ilike('month_date', `${currentMonthStr}%`);
+                .gte('month_date', startDate)
+                .lt('month_date', endDate);
 
             if (poolError) {
                 console.error("Pool Error:", poolError);
@@ -217,7 +230,7 @@ export default function Dashboard() {
                             Vibra Alta
                         </Badge>
                         <h1 className="text-4xl md:text-6xl font-bold font-heading text-white mb-2 tracking-tight">
-                            Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">{currentRoomie?.name || 'Roomie'}</span> (V5.1)
+                            Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">{currentRoomie?.name || 'Roomie'}</span> (V5.2)
                         </h1>
                         <p className="text-gray-400 text-lg max-w-md">
                             {myPendingChores > 0
@@ -377,7 +390,7 @@ export default function Dashboard() {
 
             {/* DEBUG OVERLAY - REMOVE BEFORE PRODUCTION */}
             <div className="fixed bottom-4 right-4 bg-black/80 text-xs text-green-400 p-4 rounded border border-green-500/30 max-w-sm z-50 font-mono">
-                <p className="font-bold border-b border-green-500/30 mb-2">DEBUG INFO (V5.1)</p>
+                <p className="font-bold border-b border-green-500/30 mb-2">DEBUG INFO (V5.2)</p>
                 <p>Current Roomie: {currentRoomie?.id}</p>
                 <p>Month Filter: {new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0')}</p>
                 <p>Rent Collected: ${rentCollected}</p>
