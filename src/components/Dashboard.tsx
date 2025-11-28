@@ -130,7 +130,34 @@ export default function Dashboard() {
         setMyDebt(totalDebt);
     };
 
-    if (!mounted || !boss || !rentInfo) return null;
+    if (!mounted) return null;
+
+    if (!currentRoomie) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-black p-4">
+                <Card className="w-full max-w-md bg-white/5 border-white/10">
+                    <CardHeader className="text-center">
+                        <div className="mx-auto w-16 h-16 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-purple-500/20">
+                            <Sparkles className="w-8 h-8 text-white" />
+                        </div>
+                        <CardTitle className="text-2xl font-bold text-white">Roomie App V2</CardTitle>
+                        <p className="text-gray-400">Inicia sesión para ver tu dashboard</p>
+                    </CardHeader>
+                    <CardContent>
+                        <Button
+                            className="w-full bg-white text-black hover:bg-gray-200 font-bold"
+                            onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })}
+                        >
+                            <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path></svg>
+                            Continuar con Google
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
+    if (!boss || !rentInfo) return null;
 
     const getUrgencyColor = (urgency: string) => {
         if (hasPaidRent) return 'text-emerald-400';
