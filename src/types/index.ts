@@ -16,6 +16,7 @@ export interface Payment {
     type: 'rent' | 'pool';
     month_date: string;
     created_at: string;
+    receipt_url?: string;
 }
 
 export interface Chore {
@@ -44,6 +45,7 @@ export interface Expense {
     paid_by: string;
     date: string;
     category: 'food' | 'services' | 'fun' | 'other';
+    receipt_url?: string;
 }
 
 export interface ExpenseSplit {

@@ -19,6 +19,23 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Vibra Alta | Depto 3",
   description: "Gestión de departamento y convivencia - Vibra Alta",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Roomie App",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport = {
+  themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({

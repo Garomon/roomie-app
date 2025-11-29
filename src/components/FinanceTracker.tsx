@@ -18,6 +18,8 @@ import { useAuth } from "@/components/AuthProvider";
 import SharedExpenses from "./SharedExpenses";
 import PaymentHistory from "./PaymentHistory";
 import dynamic from 'next/dynamic';
+import ReceiptUpload from "./ReceiptUpload";
+import { toast } from "sonner";
 
 const FinanceCharts = dynamic(() => import('./FinanceCharts'), { ssr: false });
 
@@ -57,6 +59,8 @@ export default function FinanceTracker() {
         }
     };
 
+    const [receiptUrl, setReceiptUrl] = useState("");
+
     const markAsPaid = async (roomieId: string, amount: number, type: 'rent' | 'pool') => {
         try {
             await supabase.from('payments').insert([{
@@ -64,7 +68,8 @@ export default function FinanceTracker() {
                 amount,
                 status: 'paid',
                 type,
-                month_date: new Date().toISOString().slice(0, 8) + '01'
+                month_date: new Date().toISOString().slice(0, 8) + '01',
+                receipt_url: receiptUrl || null
             }]);
 
             confetti({
@@ -75,8 +80,10 @@ export default function FinanceTracker() {
             });
 
             fetchPayments();
+            setReceiptUrl(""); // Reset receipt
+            toast.success("Pago registrado con éxito");
         } catch (error) {
-            alert("Error al registrar pago");
+            toast.error("Error al registrar pago");
         }
     };
 
@@ -152,41 +159,39 @@ export default function FinanceTracker() {
                                 <TableBody>
                                     {ROOMIES.map((roomie) => {
                                         const status = getPaymentStatus(roomie.id, 'rent');
+                                        const isMe = currentRoomie?.id === roomie.id;
+
                                         return (
-                                            <TableRow key={roomie.id} className="border-white/10 hover:bg-white/5">
-                                                <TableCell className="font-medium text-white">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${roomie.color}`} />
-                                                        {roomie.name}
-                                                    </div>
+                                            <TableRow key={roomie.id} className="border-white/5">
+                                                <TableCell className="font-medium text-white flex items-center gap-2">
+                                                    <Avatar className="h-8 w-8 border border-white/10">
+                                                        <AvatarImage src={roomie.avatar} />
+                                                        <AvatarFallback>{roomie.name[0]}</AvatarFallback>
+                                                    </Avatar>
+                                                    {roomie.name}
                                                 </TableCell>
-                                                <TableCell className="text-gray-400">
-                                                    {roomie.hasCloset ? "Con Clóset" : "Sin Clóset"}
-                                                </TableCell>
-                                                <TableCell className="text-right font-mono text-white">
-                                                    ${roomie.rent.toLocaleString()}
-                                                </TableCell>
+                                                <TableCell className="text-gray-400">{roomie.hasCloset ? "Grande" : "Pequeño"}</TableCell>
+                                                <TableCell className="text-right font-mono text-white">${roomie.rent.toLocaleString()}</TableCell>
                                                 <TableCell className="text-center">
                                                     {status ? (
-                                                        <Badge variant="success" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                                                            Pagado
-                                                        </Badge>
+                                                        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/50">Pagado</Badge>
                                                     ) : (
-                                                        <Badge variant="outline" className="text-gray-500 border-gray-700">
-                                                            Pendiente
-                                                        </Badge>
+                                                        <Badge variant="outline" className="text-gray-500 border-gray-700">Pendiente</Badge>
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    {!status && currentRoomie?.id === roomie.id && (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            className="hover:bg-cyan-500/20 hover:text-cyan-400"
-                                                            onClick={() => markAsPaid(roomie.id, roomie.rent, 'rent')}
-                                                        >
-                                                            Marcar Pagado
-                                                        </Button>
+                                                    {!status && isMe && (
+                                                        <div className="flex flex-col items-end gap-2">
+                                                            <ReceiptUpload onUploadComplete={setReceiptUrl} />
+                                                            <Button
+                                                                size="sm"
+                                                                className="bg-white text-black hover:bg-gray-200"
+                                                                onClick={() => markAsPaid(roomie.id, roomie.rent, 'rent')}
+                                                                disabled={!receiptUrl}
+                                                            >
+                                                                Pagar Renta
+                                                            </Button>
+                                                        </div>
                                                     )}
                                                 </TableCell>
                                             </TableRow>
@@ -225,13 +230,17 @@ export default function FinanceTracker() {
                                                     Pagado
                                                 </Badge>
                                             ) : currentRoomie?.id === roomie.id ? (
-                                                <Button
-                                                    size="sm"
-                                                    variant="secondary"
-                                                    onClick={() => markAsPaid(roomie.id, 500, 'pool')}
-                                                >
-                                                    Pagar $500
-                                                </Button>
+                                                <div className="flex flex-col gap-2">
+                                                    <ReceiptUpload onUploadComplete={setReceiptUrl} />
+                                                    <Button
+                                                        size="sm"
+                                                        variant="secondary"
+                                                        onClick={() => markAsPaid(roomie.id, 500, 'pool')}
+                                                        disabled={!receiptUrl}
+                                                    >
+                                                        Pagar $500
+                                                    </Button>
+                                                </div>
                                             ) : (
                                                 <span className="text-xs text-gray-500">Pendiente</span>
                                             )}
