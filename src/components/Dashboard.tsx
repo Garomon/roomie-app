@@ -184,31 +184,31 @@ export default function Dashboard() {
         );
     }
 
-    // Manifesto Enforcement
-    if (typeof window !== 'undefined' && !localStorage.getItem("manifesto_signed")) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-black p-4">
-                <Card className="w-full max-w-md bg-gradient-to-br from-red-900/20 to-orange-900/20 border-red-500/30">
-                    <CardHeader className="text-center">
-                        <div className="mx-auto w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-4 border border-red-500/50">
-                            <Shield className="w-8 h-8 text-red-400" />
-                        </div>
-                        <CardTitle className="text-2xl font-bold text-white">Acción Requerida</CardTitle>
-                        <CardDescription className="text-gray-300">
-                            Para acceder al Dashboard, primero debes leer y aceptar el <strong>Manifiesto Anzures</strong>.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Link href="/manifesto">
-                            <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold">
-                                Ir al Manifiesto 📜
-                            </Button>
-                        </Link>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
+    // Manifesto Enforcement - DISABLED FOR BETA
+    // if (typeof window !== 'undefined' && !localStorage.getItem("manifesto_signed")) {
+    //     return (
+    //         <div className="min-h-screen flex items-center justify-center bg-black p-4">
+    //             <Card className="w-full max-w-md bg-gradient-to-br from-red-900/20 to-orange-900/20 border-red-500/30">
+    //                 <CardHeader className="text-center">
+    //                     <div className="mx-auto w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-4 border border-red-500/50">
+    //                         <Shield className="w-8 h-8 text-red-400" />
+    //                     </div>
+    //                     <CardTitle className="text-2xl font-bold text-white">Acción Requerida</CardTitle>
+    //                     <CardDescription className="text-gray-300">
+    //                         Para acceder al Dashboard, primero debes leer y aceptar el <strong>Manifiesto Anzures</strong>.
+    //                     </CardDescription>
+    //                 </CardHeader>
+    //                 <CardContent>
+    //                     <Link href="/manifesto">
+    //                         <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold">
+    //                             Ir al Manifiesto 📜
+    //                         </Button>
+    //                     </Link>
+    //                 </CardContent>
+    //             </Card>
+    //         </div>
+    //     );
+    // }
 
     if (!boss || !rentInfo) return null;
 
@@ -277,6 +277,15 @@ export default function Dashboard() {
                             </Badge>
                             {reliabilityScore < 80 && (
                                 <span className="text-xs text-red-400 animate-pulse">¡Ponte las pilas!</span>
+                            )}
+                            {reliabilityScore === 100 && (
+                                <div className="flex items-center gap-1 text-orange-500 animate-pulse">
+                                    <span className="text-xs font-bold">Racha Perfecta</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                                        <path fillRule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177c-.342 2.558.46 5.233 2.173 7.019 1.712 1.79 4.152 2.519 6.579 1.992a1 1 0 00.717-1.529 7.175 7.175 0 01-1.386-4.777l.002-.018a1.902 1.902 0 01.292-1.156c.056-.092.109-.19.154-.292a7.65 7.65 0 00-2.09-8.165.75.75 0 00-.831-.115z" clipRule="evenodd" />
+                                        <path fillRule="evenodd" d="M7.838 10.588A3.75 3.75 0 0112 9a3.75 3.75 0 013.25 4.875 1.5 1.5 0 00-2.25 1.5c0 .414.336.75.75.75a.75.75 0 01.75.75v.75a2.25 2.25 0 11-4.5 0v-.75a.75.75 0 01.75-.75.75.75 0 00.75-.75 1.5 1.5 0 00-2.25-1.5 3.75 3.75 0 01-.912-2.037z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
                             )}
                         </div>
                     </div>

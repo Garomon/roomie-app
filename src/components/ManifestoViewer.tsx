@@ -4,8 +4,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Heart, Shield, Zap } from "lucide-react";
-import SignaturePad from "@/components/SignaturePad";
-import { Button } from "@/components/ui/button";
+import BiometricCommitment from "@/components/BiometricCommitment";
 
 export default function ManifestoViewer() {
     const sections = [
@@ -30,31 +29,33 @@ export default function ManifestoViewer() {
                     <p>La renta se paga a tiempo, no excuses. El cobro se hace por el &apos;Boss&apos; del Mes (Responsable de Consolidación) que rota para que el karma sea parejo.</p>
 
                     <div className="grid gap-3 text-sm bg-black/20 p-4 rounded-lg border border-white/5">
-                        <div className="grid grid-cols-12 gap-2 border-b border-white/10 pb-2 font-bold text-gray-400">
-                            <div className="col-span-4">Residente</div>
-                            <div className="col-span-4">Espacio Asignado</div>
-                            <div className="col-span-4 text-right">Renta Individual</div>
+                        <div className="grid gap-3 text-sm bg-black/20 p-4 rounded-lg border border-white/5">
+                            <div className="grid grid-cols-12 gap-2 border-b border-white/10 pb-2 font-bold text-gray-400">
+                                <div className="col-span-4">Residente</div>
+                                <div className="col-span-4">Espacio Asignado</div>
+                                <div className="col-span-4 text-right">Renta Individual</div>
+                            </div>
+                            <div className="grid grid-cols-12 gap-2 border-b border-white/10 pb-2 items-center">
+                                <div className="col-span-4">Edgardo Montoya</div>
+                                <div className="col-span-4 text-xs">Habitación con Baño y Estudio (PA)</div>
+                                <div className="col-span-4 text-right font-mono text-cyan-400">$14,500.00</div>
+                            </div>
+                            <div className="grid grid-cols-12 gap-2 border-b border-white/10 pb-2 items-center">
+                                <div className="col-span-4">James Kennedy</div>
+                                <div className="col-span-4 text-xs">Habitación con Clóset (PB)</div>
+                                <div className="col-span-4 text-right font-mono text-cyan-400">$10,500.00</div>
+                            </div>
+                            <div className="grid grid-cols-12 gap-2 border-b border-white/10 pb-2 items-center">
+                                <div className="col-span-4">Alejandro Dorantes</div>
+                                <div className="col-span-4 text-xs">Habitación sin Clóset (PB)</div>
+                                <div className="col-span-4 text-right font-mono text-cyan-400">$7,000.00</div>
+                            </div>
+                            <div className="grid grid-cols-12 gap-2 font-bold pt-1 items-center">
+                                <div className="col-span-8">TOTAL RENTA MENSUAL</div>
+                                <div className="col-span-4 text-right font-mono text-emerald-400">$32,000.00</div>
+                            </div>
+                            <p className="text-xs text-center text-gray-500 mt-2">Fecha Límite de Pago al &apos;Boss&apos;: Día 30 de cada mes</p>
                         </div>
-                        <div className="grid grid-cols-12 gap-2 border-b border-white/10 pb-2 items-center">
-                            <div className="col-span-4">Edgardo Montoya</div>
-                            <div className="col-span-4 text-xs">Habitación con Baño y Estudio (PA)</div>
-                            <div className="col-span-4 text-right font-mono text-cyan-400">$14,500.00</div>
-                        </div>
-                        <div className="grid grid-cols-12 gap-2 border-b border-white/10 pb-2 items-center">
-                            <div className="col-span-4">James Kennedy</div>
-                            <div className="col-span-4 text-xs">Habitación con Clóset (PB)</div>
-                            <div className="col-span-4 text-right font-mono text-cyan-400">$10,500.00</div>
-                        </div>
-                        <div className="grid grid-cols-12 gap-2 border-b border-white/10 pb-2 items-center">
-                            <div className="col-span-4">Alejandro Dorantes</div>
-                            <div className="col-span-4 text-xs">Habitación sin Clóset (PB)</div>
-                            <div className="col-span-4 text-right font-mono text-cyan-400">$7,000.00</div>
-                        </div>
-                        <div className="grid grid-cols-12 gap-2 font-bold pt-1 items-center">
-                            <div className="col-span-8">TOTAL RENTA MENSUAL</div>
-                            <div className="col-span-4 text-right font-mono text-emerald-400">$32,000.00</div>
-                        </div>
-                        <p className="text-xs text-center text-gray-500 mt-2">Fecha Límite de Pago al &apos;Boss&apos;: Día 30 de cada mes</p>
                     </div>
 
                     <div className="space-y-4">
@@ -193,23 +194,12 @@ export default function ManifestoViewer() {
             </div>
 
             <div className="flex flex-col items-center justify-center pt-8 pb-12 gap-6">
-                <div className="w-full max-w-md">
-                    <SignaturePad />
-                </div>
-
-                <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white font-bold px-8 py-6 text-lg shadow-lg shadow-purple-500/20"
-                    onClick={() => {
-                        // In a real app, we'd save this to the DB.
-                        // For now, we use localStorage to "unlock" the app on this device.
+                <BiometricCommitment
+                    onCommit={() => {
                         localStorage.setItem("manifesto_signed", "true");
-                        window.location.href = "/"; // Redirect to Dashboard
+                        window.location.href = "/";
                     }}
-                >
-                    He leído y acepto las reglas del juego 🤝
-                </Button>
-                <p className="text-xs text-gray-500">Al hacer click, aceptas el compromiso de Vibra Alta.</p>
+                />
             </div>
         </div>
     );
