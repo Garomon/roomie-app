@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Heart, Shield, Zap } from "lucide-react";
 import SignaturePad from "@/components/SignaturePad";
+import { Button } from "@/components/ui/button";
 
 export default function ManifestoViewer() {
     const sections = [
@@ -191,10 +192,24 @@ export default function ManifestoViewer() {
                 ))}
             </div>
 
-            <div className="flex justify-center pt-8 pb-12">
+            <div className="flex flex-col items-center justify-center pt-8 pb-12 gap-6">
                 <div className="w-full max-w-md">
                     <SignaturePad />
                 </div>
+
+                <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white font-bold px-8 py-6 text-lg shadow-lg shadow-purple-500/20"
+                    onClick={() => {
+                        // In a real app, we'd save this to the DB.
+                        // For now, we use localStorage to "unlock" the app on this device.
+                        localStorage.setItem("manifesto_signed", "true");
+                        window.location.href = "/"; // Redirect to Dashboard
+                    }}
+                >
+                    He leído y acepto las reglas del juego 🤝
+                </Button>
+                <p className="text-xs text-gray-500">Al hacer click, aceptas el compromiso de Vibra Alta.</p>
             </div>
         </div>
     );
