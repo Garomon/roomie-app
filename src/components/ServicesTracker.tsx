@@ -1,21 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ROOMIES } from "@/lib/bossLogic";
+import { toast } from "sonner";
 
-export default function ServicesTracker() {
-    const [services, setServices] = useState({
-        electricity: "",
-        gas: "",
-        water: "",
-        internet: ""
-    });
+interface ServicesState {
+    electricity: string;
+    gas: string;
+    water: string;
+    internet: string;
+}
 
+interface ServicesTrackerProps {
+    services: ServicesState;
+    setServices: (services: ServicesState) => void;
+}
+
+export default function ServicesTracker({ services, setServices }: ServicesTrackerProps) {
     const total = Object.values(services).reduce((acc, val) => acc + (parseFloat(val) || 0), 0);
     const perPerson = total / 3;
 
@@ -97,8 +101,7 @@ export default function ServicesTracker() {
                                 onClick={() => {
                                     const text = `*Servicios del Mes*\n\nLuz: $${services.electricity || 0}\nGas: $${services.gas || 0}\nAgua: $${services.water || 0}\nInternet: $${services.internet || 0}\n\n*Total: $${total.toLocaleString()}*\n*A pagar c/u: $${perPerson.toLocaleString(undefined, { minimumFractionDigits: 2 })}*\n\nFavor de depositar al Boss. 💸`;
                                     navigator.clipboard.writeText(text);
-                                    // toast.success("Copiado al portapapeles para WhatsApp"); // Need to import toast
-                                    alert("Copiado al portapapeles para WhatsApp");
+                                    toast.success("Copiado al portapapeles para WhatsApp");
                                 }}
                             >
                                 Copiar para WhatsApp 📱

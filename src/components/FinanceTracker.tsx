@@ -32,12 +32,30 @@ export default function FinanceTracker() {
     const [serviceTotal, setServiceTotal] = useState("");
     const [boss, setBoss] = useState<Roomie | null>(null);
 
+    const [services, setServices] = useState({
+        electricity: "",
+        gas: "",
+        water: "",
+        internet: ""
+    });
+
     const handleExport = () => {
         const currentMonth = new Date().toLocaleString('es-MX', { month: 'long', year: 'numeric' });
-        // Mock services for now, or fetch from a global state if we had one. 
-        // Since ServicesTracker has local state, we'll just export Rent/Pool for now or pass dummy 0s.
-        // Ideally, we lift the state up, but for V6.2 let's just export what we have.
-        generateMonthlyReport(ROOMIES, payments, [], currentMonth);
+
+        // Convert services object to array for PDF generator if needed, or just pass the totals
+        // The generateMonthlyReport function expects: roomies, payments, expenses, monthName
+        // We might need to adjust generateMonthlyReport to accept services data or we can pass it as "expenses"
+        // For now, let's assume we want to include services in the report.
+        // We'll create "Expense" objects for the services to pass them in.
+
+        const serviceExpenses = [
+            { name: 'Luz (CFE)', amount: parseFloat(services.electricity) || 0 },
+            { name: 'Gas', amount: parseFloat(services.gas) || 0 },
+            { name: 'Agua', amount: parseFloat(services.water) || 0 },
+            { name: 'Internet', amount: parseFloat(services.internet) || 0 },
+        ].filter(e => e.amount > 0);
+
+        generateMonthlyReport(ROOMIES, payments, serviceExpenses, currentMonth);
         toast.success("Reporte descargado");
     };
 
@@ -109,6 +127,7 @@ export default function FinanceTracker() {
     };
 
     const servicePerPerson = serviceTotal ? (parseFloat(serviceTotal) / 3).toFixed(2) : "0.00";
+    const isBoss = currentRoomie?.id === boss?.id;
 
     return (
         <motion.div
@@ -234,7 +253,6 @@ export default function FinanceTracker() {
                                 <TableBody>
                                     {ROOMIES.map((roomie) => {
                                         const status = getPaymentStatus(roomie.id, 'rent');
-                                        const isMe = currentRoomie?.id === roomie.id;
 
                                         return (
                                             <TableRow key={roomie.id} className="border-white/5">
@@ -255,13 +273,13 @@ export default function FinanceTracker() {
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    {!status && isMe && (
+                                                    {!status && isBoss && (
                                                         <Button
                                                             size="sm"
                                                             className="bg-white text-black hover:bg-gray-200"
                                                             onClick={() => markAsPaid(roomie.id, roomie.rent, 'rent')}
                                                         >
-                                                            Pagar Renta
+                                                            Marcar Pagado
                                                         </Button>
                                                     )}
                                                 </TableCell>
@@ -300,13 +318,13 @@ export default function FinanceTracker() {
                                                 <Badge variant="success" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
                                                     Pagado
                                                 </Badge>
-                                            ) : currentRoomie?.id === roomie.id ? (
+                                            ) : isBoss ? (
                                                 <Button
                                                     size="sm"
                                                     variant="secondary"
                                                     onClick={() => markAsPaid(roomie.id, 500, 'pool')}
                                                 >
-                                                    Pagar $500
+                                                    Marcar Pagado
                                                 </Button>
                                             ) : (
                                                 <span className="text-xs text-gray-500">Pendiente</span>
@@ -320,7 +338,7 @@ export default function FinanceTracker() {
                 </TabsContent>
 
                 <TabsContent value="services" className="mt-6">
-                    <ServicesTracker />
+                    <ServicesTracker services={services} setServices={setServices} />
                 </TabsContent>
             </Tabs>
         </motion.div>
