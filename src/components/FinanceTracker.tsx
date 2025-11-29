@@ -20,6 +20,7 @@ import PaymentHistory from "./PaymentHistory";
 import dynamic from 'next/dynamic';
 import ReceiptUpload from "./ReceiptUpload";
 import { toast } from "sonner";
+import ServicesTracker from "./ServicesTracker";
 
 const FinanceCharts = dynamic(() => import('./FinanceCharts'), { ssr: false });
 
@@ -187,7 +188,6 @@ export default function FinanceTracker() {
                                                                 size="sm"
                                                                 className="bg-white text-black hover:bg-gray-200"
                                                                 onClick={() => markAsPaid(roomie.id, roomie.rent, 'rent')}
-                                                                disabled={!receiptUrl}
                                                             >
                                                                 Pagar Renta
                                                             </Button>
@@ -236,7 +236,6 @@ export default function FinanceTracker() {
                                                         size="sm"
                                                         variant="secondary"
                                                         onClick={() => markAsPaid(roomie.id, 500, 'pool')}
-                                                        disabled={!receiptUrl}
                                                     >
                                                         Pagar $500
                                                     </Button>
@@ -253,10 +252,7 @@ export default function FinanceTracker() {
                 </TabsContent>
 
                 <TabsContent value="services" className="mt-6">
-                    <div className="w-full max-w-4xl mx-auto text-center py-10">
-                        <p className="text-gray-400">La calculadora ha sido eliminada por ser "una tontería".</p>
-                        <p className="text-xs text-gray-600 mt-2">Usa "Compartidos" para dividir gastos.</p>
-                    </div>
+                    <ServicesTracker />
                 </TabsContent>
             </Tabs>
         </motion.div>
