@@ -27,7 +27,7 @@ export default function Dashboard() {
     const [paidPoolRoomies, setPaidPoolRoomies] = useState<string[]>([]);
     const [debugError, setDebugError] = useState<string | null>(null);
 
-    const { roomie: currentRoomie } = useAuth();
+    const { roomie: currentRoomie, loading } = useAuth();
     const { roomies } = useRoomies();
     const [myPendingChores, setMyPendingChores] = useState(0);
     const [myDebt, setMyDebt] = useState(0);
@@ -157,7 +157,13 @@ export default function Dashboard() {
         setReliabilityScore(score);
     };
 
-    if (!mounted) return null;
+    if (loading || !mounted) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-black">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+            </div>
+        );
+    }
 
     if (!currentRoomie) {
         return (
