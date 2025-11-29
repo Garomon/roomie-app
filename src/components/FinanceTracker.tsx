@@ -73,7 +73,7 @@ export default function FinanceTracker() {
 
     const [receiptUrl, setReceiptUrl] = useState("");
 
-    const markAsPaid = async (roomieId: string, amount: number, type: 'rent' | 'pool') => {
+    const markAsPaid = async (roomieId: string, amount: number, type: 'rent' | 'pool' | 'landlord') => {
         try {
             await supabase.from('payments').insert([{
                 roomie_id: roomieId,
@@ -99,7 +99,7 @@ export default function FinanceTracker() {
         }
     };
 
-    const getPaymentStatus = (roomieId: string, type: 'rent' | 'pool') => {
+    const getPaymentStatus = (roomieId: string, type: 'rent' | 'pool' | 'landlord') => {
         const currentMonth = new Date().toISOString().slice(0, 8) + '01';
         return payments.find(p =>
             p.roomie_id === roomieId &&
@@ -163,6 +163,58 @@ export default function FinanceTracker() {
                 </TabsContent>
 
                 <TabsContent value="rent" className="mt-6 space-y-6">
+                    {/* Boss Landlord Payment Section */}
+                    {boss && currentRoomie?.id === boss.id && (
+                        <Card className="bg-gradient-to-r from-purple-900/20 to-cyan-900/20 border-purple-500/30">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Sparkles className="w-5 h-5 text-yellow-400" />
+                                    Panel del Boss: Pago al Casero
+                                </CardTitle>
+                                <CardDescription>
+                                    Una vez que juntes los $32,000, sube el comprobante final aquí.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {getPaymentStatus(boss.id, 'landlord') ? (
+                                    <div className="flex items-center gap-2 text-emerald-400 bg-emerald-500/10 p-4 rounded-lg border border-emerald-500/20">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                        <span className="font-bold">¡Renta Pagada al Casero! Misión Cumplida.</span>
+                                        {getPaymentStatus(boss.id, 'landlord')?.receipt_url && (
+                                            <a
+                                                href={getPaymentStatus(boss.id, 'landlord')?.receipt_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="ml-auto text-xs underline hover:text-emerald-300"
+                                            >
+                                                Ver Comprobante
+                                            </a>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col gap-4">
+                                        <div className="flex items-center justify-between p-4 bg-black/20 rounded-lg">
+                                            <span className="text-gray-300">Monto Total a Pagar:</span>
+                                            <span className="text-2xl font-mono font-bold text-white">$32,000.00</span>
+                                        </div>
+                                        <div className="flex items-end gap-4">
+                                            <div className="flex-1">
+                                                <ReceiptUpload onUploadComplete={setReceiptUrl} bucketName="receipts" />
+                                            </div>
+                                            <Button
+                                                className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                                                disabled={!receiptUrl}
+                                                onClick={() => markAsPaid(boss.id, 32000, 'landlord')}
+                                            >
+                                                Confirmar Pago al Casero 🏠
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+
                     <Card>
                         <CardHeader>
                             <CardTitle>Desglose de Renta</CardTitle>
@@ -204,16 +256,13 @@ export default function FinanceTracker() {
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     {!status && isMe && (
-                                                        <div className="flex flex-col items-end gap-2">
-                                                            <ReceiptUpload onUploadComplete={setReceiptUrl} />
-                                                            <Button
-                                                                size="sm"
-                                                                className="bg-white text-black hover:bg-gray-200"
-                                                                onClick={() => markAsPaid(roomie.id, roomie.rent, 'rent')}
-                                                            >
-                                                                Pagar Renta
-                                                            </Button>
-                                                        </div>
+                                                        <Button
+                                                            size="sm"
+                                                            className="bg-white text-black hover:bg-gray-200"
+                                                            onClick={() => markAsPaid(roomie.id, roomie.rent, 'rent')}
+                                                        >
+                                                            Pagar Renta
+                                                        </Button>
                                                     )}
                                                 </TableCell>
                                             </TableRow>
@@ -252,16 +301,13 @@ export default function FinanceTracker() {
                                                     Pagado
                                                 </Badge>
                                             ) : currentRoomie?.id === roomie.id ? (
-                                                <div className="flex flex-col gap-2">
-                                                    <ReceiptUpload onUploadComplete={setReceiptUrl} />
-                                                    <Button
-                                                        size="sm"
-                                                        variant="secondary"
-                                                        onClick={() => markAsPaid(roomie.id, 500, 'pool')}
-                                                    >
-                                                        Pagar $500
-                                                    </Button>
-                                                </div>
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    onClick={() => markAsPaid(roomie.id, 500, 'pool')}
+                                                >
+                                                    Pagar $500
+                                                </Button>
                                             ) : (
                                                 <span className="text-xs text-gray-500">Pendiente</span>
                                             )}

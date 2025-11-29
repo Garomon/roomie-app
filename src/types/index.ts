@@ -13,7 +13,7 @@ export interface Payment {
     roomie_id: string;
     amount: number;
     status: string;
-    type: 'rent' | 'pool';
+    type: 'rent' | 'pool' | 'landlord';
     month_date: string;
     created_at: string;
     receipt_url?: string;
