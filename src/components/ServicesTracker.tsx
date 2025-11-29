@@ -92,8 +92,16 @@ export default function ServicesTracker() {
                                 ))}
                             </div>
 
-                            <Button className="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-bold">
-                                Notificar Montos (Próximamente)
+                            <Button
+                                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold"
+                                onClick={() => {
+                                    const text = `*Servicios del Mes*\n\nLuz: $${services.electricity || 0}\nGas: $${services.gas || 0}\nAgua: $${services.water || 0}\nInternet: $${services.internet || 0}\n\n*Total: $${total.toLocaleString()}*\n*A pagar c/u: $${perPerson.toLocaleString(undefined, { minimumFractionDigits: 2 })}*\n\nFavor de depositar al Boss. 💸`;
+                                    navigator.clipboard.writeText(text);
+                                    // toast.success("Copiado al portapapeles para WhatsApp"); // Need to import toast
+                                    alert("Copiado al portapapeles para WhatsApp");
+                                }}
+                            >
+                                Copiar para WhatsApp 📱
                             </Button>
                         </div>
                     </div>

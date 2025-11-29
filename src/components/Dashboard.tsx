@@ -237,6 +237,11 @@ export default function Dashboard() {
                                 ? `Tienes ${myPendingChores} tareas pendientes y debes $${myDebt.toFixed(0)}.`
                                 : "Todo al día. ¡Eres el MVP del departamento!"}
                         </p>
+                        <div className="mt-4 flex items-center gap-2">
+                            <Badge variant="outline" className="bg-white/5 border-white/10 text-gray-300">
+                                Reliability Score: 100%
+                            </Badge>
+                        </div>
                     </div>
 
                     {/* Boss Card */}

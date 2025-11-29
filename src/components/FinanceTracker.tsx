@@ -21,6 +21,8 @@ import dynamic from 'next/dynamic';
 import ReceiptUpload from "./ReceiptUpload";
 import { toast } from "sonner";
 import ServicesTracker from "./ServicesTracker";
+import { generateMonthlyReport } from "@/lib/pdfGenerator";
+import { Download } from "lucide-react";
 
 const FinanceCharts = dynamic(() => import('./FinanceCharts'), { ssr: false });
 
@@ -29,6 +31,15 @@ export default function FinanceTracker() {
     const [payments, setPayments] = useState<Payment[]>([]);
     const [serviceTotal, setServiceTotal] = useState("");
     const [boss, setBoss] = useState<Roomie | null>(null);
+
+    const handleExport = () => {
+        const currentMonth = new Date().toLocaleString('es-MX', { month: 'long', year: 'numeric' });
+        // Mock services for now, or fetch from a global state if we had one. 
+        // Since ServicesTracker has local state, we'll just export Rent/Pool for now or pass dummy 0s.
+        // Ideally, we lift the state up, but for V6.2 let's just export what we have.
+        generateMonthlyReport(ROOMIES, payments, [], currentMonth);
+        toast.success("Reporte descargado");
+    };
 
     useEffect(() => {
         fetchPayments();
@@ -111,11 +122,22 @@ export default function FinanceTracker() {
                     <h2 className="text-3xl font-bold font-heading text-white">The Finance Game</h2>
                     <p className="text-gray-400">Regla de Oro: El pago es final e irrevocable.</p>
                 </div>
-                {boss && (
-                    <Badge variant="vibra" className="text-sm py-1 px-3">
-                        Boss Actual: {boss.name}
-                    </Badge>
-                )}
+                <div className="flex gap-2 items-center">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-white/5 border-white/10 hover:bg-white/10"
+                        onClick={handleExport}
+                    >
+                        <Download className="w-4 h-4 mr-2" />
+                        Reporte PDF
+                    </Button>
+                    {boss && (
+                        <Badge variant="vibra" className="text-sm py-1 px-3">
+                            Boss Actual: {boss.name}
+                        </Badge>
+                    )}
+                </div>
             </div>
 
             <Tabs defaultValue="rent" className="w-full">
