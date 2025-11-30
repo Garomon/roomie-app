@@ -194,9 +194,7 @@ export default function RoommateProfile({ roomie }: RoommateProfileProps) {
                         {stats.reliabilityScore === 100 && <Sparkles className="w-4 h-4 text-yellow-400 animate-pulse" />}
                     </CardTitle>
                     <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs border-white/20 text-gray-400 bg-black/20">
-                            {roomie.hasCloset ? "Master Suite" : "Habitación Standard"}
-                        </Badge>
+                        {/* Room type badge removed */}
                     </div>
                 </div>
             </CardHeader>
