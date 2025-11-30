@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { SearchCommand } from "@/components/SearchCommand";
-import { NotificationsCenter } from "@/components/NotificationsCenter";
+import NotificationsCenter from "@/components/NotificationsCenter";
 import LoginButton from "@/components/LoginButton";
 
 export default function Navigation() {
