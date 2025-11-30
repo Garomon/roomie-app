@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getBossOfTheMonth, getDaysUntilRentDue, RentStatus } from "@/lib/bossLogic";
-import { Crown, Clock, PiggyBank, ArrowRight, Sparkles, Shield } from "lucide-react";
+import { getBossOfTheMonth, getDaysUntilRentDue, RentStatus, ROOMIES } from "@/lib/bossLogic";
+import { Crown, Clock, PiggyBank, ArrowRight, Sparkles, Shield, UserCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,7 @@ export default function Dashboard() {
     const [paidPoolRoomies, setPaidPoolRoomies] = useState<string[]>([]);
     const [debugError, setDebugError] = useState<string | null>(null);
 
-    const { roomie: currentRoomie, loading, signInWithGoogle } = useAuth();
+    const { roomie: currentRoomie, user, loading, signInWithGoogle, linkRoomie } = useAuth();
     const { roomies } = useRoomies();
     const [myPendingChores, setMyPendingChores] = useState(0);
     const [myDebt, setMyDebt] = useState(0);
@@ -165,7 +165,8 @@ export default function Dashboard() {
         );
     }
 
-    if (!currentRoomie) {
+    // Case 1: Not Logged In
+    if (!user) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-black p-4">
                 <Card className="w-full max-w-md bg-white/5 border-white/10">
@@ -184,6 +185,44 @@ export default function Dashboard() {
                             <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path></svg>
                             Continuar con Google
                         </Button>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
+    // Case 2: Logged In but Not Linked
+    if (user && !currentRoomie) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-black p-4">
+                <Card className="w-full max-w-md bg-white/5 border-white/10">
+                    <CardHeader className="text-center">
+                        <div className="mx-auto w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-orange-500/20">
+                            <UserCircle2 className="w-8 h-8 text-white" />
+                        </div>
+                        <CardTitle className="text-2xl font-bold text-white">¡Casi listo!</CardTitle>
+                        <CardDescription className="text-gray-400">
+                            Para continuar, identifica quién eres en el departamento.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-4">
+                        {ROOMIES.map((r) => (
+                            <Button
+                                key={r.id}
+                                variant="outline"
+                                className="h-auto py-4 justify-start gap-4 border-white/10 hover:bg-white/5 hover:border-cyan-500/50 group"
+                                onClick={() => linkRoomie(r.id)}
+                            >
+                                <Avatar className="h-10 w-10 border border-white/10 group-hover:border-cyan-500">
+                                    <AvatarImage src={r.avatar} />
+                                    <AvatarFallback>{r.name[0]}</AvatarFallback>
+                                </Avatar>
+                                <div className="text-left">
+                                    <p className="font-bold text-white group-hover:text-cyan-400">{r.name}</p>
+                                    <p className="text-xs text-gray-500">Seleccionar perfil</p>
+                                </div>
+                            </Button>
+                        ))}
                     </CardContent>
                 </Card>
             </div>

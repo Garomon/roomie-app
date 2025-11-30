@@ -244,7 +244,6 @@ export default function FinanceTracker() {
                                 <TableHeader>
                                     <TableRow className="border-white/10 hover:bg-transparent">
                                         <TableHead className="text-gray-400">Roomie</TableHead>
-                                        <TableHead className="text-gray-400">Espacio</TableHead>
                                         <TableHead className="text-right text-gray-400">Monto</TableHead>
                                         <TableHead className="text-center text-gray-400">Estado</TableHead>
                                         <TableHead className="text-right text-gray-400">Acción</TableHead>
@@ -263,7 +262,6 @@ export default function FinanceTracker() {
                                                     </Avatar>
                                                     {roomie.name}
                                                 </TableCell>
-                                                <TableCell className="text-gray-400">{roomie.hasCloset ? "Grande" : "Pequeño"}</TableCell>
                                                 <TableCell className="text-right font-mono text-white">${roomie.rent.toLocaleString()}</TableCell>
                                                 <TableCell className="text-center">
                                                     {status ? (
