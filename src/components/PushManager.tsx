@@ -72,25 +72,52 @@ export default function PushManager() {
 
     if (!roomie) return null;
 
+    const resetSubscription = async () => {
+        if (confirm("Esto reiniciará el sistema de notificaciones. ¿Continuar?")) {
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                await registration.unregister();
+                setIsSubscribed(false);
+                toast.success("Sistema reiniciado. Recarga la página.");
+                window.location.reload();
+            } catch (error) {
+                console.error("Error resetting:", error);
+                toast.error("Error al reiniciar");
+            }
+        }
+    };
+
     if (isSubscribed) {
         return (
-            <Button variant="ghost" size="icon" className="text-cyan-400" disabled>
-                <BellRing className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="text-cyan-400" disabled>
+                    <BellRing className="w-5 h-5" />
+                </Button>
+                {/* Hidden reset for debugging */}
+                <button onClick={resetSubscription} className="text-[10px] text-gray-700 hover:text-red-500">
+                    (Reset)
+                </button>
+            </div>
         );
     }
 
     return (
-        <Button
-            variant="outline"
-            size="sm"
-            className="gap-2 bg-white/5 border-white/10 hover:bg-white/10 text-gray-400 hover:text-white"
-            onClick={subscribeUser}
-            disabled={loading}
-            aria-label="Activar Notificaciones"
-        >
-            <BellOff className="w-4 h-4" />
-            <span className="hidden xl:inline">{loading ? "Activando..." : "Activar Alertas"}</span>
-        </Button>
+        <div className="flex items-center gap-2">
+            <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 bg-white/5 border-white/10 hover:bg-white/10 text-gray-400 hover:text-white"
+                onClick={subscribeUser}
+                disabled={loading}
+                aria-label="Activar Notificaciones"
+            >
+                <BellOff className="w-4 h-4" />
+                <span className="hidden xl:inline">{loading ? "Activando..." : "Activar Alertas"}</span>
+            </Button>
+            {/* Debug reset */}
+            <button onClick={resetSubscription} className="text-[10px] text-gray-700 hover:text-red-500">
+                (Reset)
+            </button>
+        </div>
     );
 }
