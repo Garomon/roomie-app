@@ -17,7 +17,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Vibra Alta | Depto 3 (v2.2)",
+  title: "Vibra Alta | Depto 3 (v2.3)",
   description: "Gestión de departamento y convivencia - Vibra Alta",
   manifest: "/manifest.json",
   appleWebApp: {
