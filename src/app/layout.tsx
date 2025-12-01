@@ -58,7 +58,7 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             <Navigation />
-            <main className="pb-20 md:pb-0 md:pl-64 pt-16 md:pt-0 min-h-screen">
+            <main className="container mx-auto px-4 py-6 md:py-12 min-h-screen">
               {children}
             </main>
             <Toaster position="top-center" theme="dark" />

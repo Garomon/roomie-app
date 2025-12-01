@@ -76,9 +76,10 @@ export default function InstallPWA() {
                 size="sm"
                 className="gap-2 bg-white/5 border-white/10 hover:bg-white/10 text-cyan-400"
                 onClick={onClick}
+                aria-label="Instalar Aplicación"
             >
                 <Download className="w-4 h-4" />
-                <span className="hidden lg:inline">Instalar App</span>
+                <span className="hidden xl:inline">Instalar App</span>
             </Button>
 
             <Dialog open={showIOSInstructions} onOpenChange={setShowIOSInstructions}>

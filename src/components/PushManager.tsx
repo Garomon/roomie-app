@@ -87,9 +87,10 @@ export default function PushManager() {
             className="gap-2 bg-white/5 border-white/10 hover:bg-white/10 text-gray-400 hover:text-white"
             onClick={subscribeUser}
             disabled={loading}
+            aria-label="Activar Notificaciones"
         >
             <BellOff className="w-4 h-4" />
-            <span className="hidden lg:inline">{loading ? "Activando..." : "Activar Alertas"}</span>
+            <span className="hidden xl:inline">{loading ? "Activando..." : "Activar Alertas"}</span>
         </Button>
     );
 }
