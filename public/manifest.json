@@ -2,11 +2,17 @@
     "name": "Roomie App - Depto 3",
     "short_name": "Roomie App",
     "description": "Gestión de gastos y tareas para el Depto 3",
+    "id": "/",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#000000",
     "theme_color": "#000000",
     "orientation": "portrait",
+    "categories": [
+        "productivity",
+        "finance",
+        "utilities"
+    ],
     "icons": [
         {
             "src": "/icon-192x192.png",

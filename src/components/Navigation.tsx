@@ -1,28 +1,40 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Home, DollarSign, CheckCircle2, FileText, Users, Menu, BarChart3 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+    LayoutDashboard,
+    DollarSign,
+    CheckSquare,
+    Users,
+    Menu,
+    FileText,
+    BarChart3
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { SearchCommand } from "@/components/SearchCommand";
-import NotificationsCenter from "@/components/NotificationsCenter";
 import LoginButton from "@/components/LoginButton";
+import { useAuth } from "@/components/AuthProvider";
+import NotificationsCenter from "@/components/NotificationsCenter";
+import { SearchCommand } from "@/components/SearchCommand";
+import InstallPWA from "@/components/InstallPWA";
+import PushManager from "@/components/PushManager";
 
 export default function Navigation() {
+    const { roomie } = useAuth();
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
 
     const routes = [
-        { href: "/", label: "Dashboard", icon: Home },
+        { href: "/", label: "Dashboard", icon: LayoutDashboard },
         { href: "/finance", label: "Finanzas", icon: DollarSign },
-        { href: "/chores", label: "Tareas", icon: CheckCircle2 },
+        { href: "/chores", label: "Tareas", icon: CheckSquare },
         { href: "/analytics", label: "Analytics", icon: BarChart3 },
-        { href: "/manifesto", label: "Manifiesto", icon: FileText },
         { href: "/profiles", label: "Perfiles", icon: Users },
+        { href: "/manifesto", label: "Manifiesto", icon: FileText },
     ];
 
     return (
@@ -45,21 +57,24 @@ export default function Navigation() {
                     </Link>
 
                     <div className="hidden md:flex items-center gap-1">
-                        {routes.map((route) => (
-                            <Link
-                                key={route.href}
-                                href={route.href}
-                                className={cn(
-                                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10",
-                                    pathname === route.href
-                                        ? "bg-white/10 text-white"
-                                        : "text-gray-400 hover:text-white"
-                                )}
-                            >
-                                <route.icon className="h-4 w-4" />
-                                {route.label}
-                            </Link>
-                        ))}
+                        {routes.map((route) => {
+                            const Icon = route.icon;
+                            return (
+                                <Link
+                                    key={route.href}
+                                    href={route.href}
+                                    className={cn(
+                                        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10",
+                                        pathname === route.href
+                                            ? "bg-white/10 text-white"
+                                            : "text-gray-400 hover:text-white"
+                                    )}
+                                >
+                                    <Icon className="h-4 w-4" />
+                                    {route.label}
+                                </Link>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -68,6 +83,8 @@ export default function Navigation() {
                         <SearchCommand />
                     </div>
 
+                    <InstallPWA />
+                    <PushManager />
                     <NotificationsCenter />
 
                     <div className="hidden md:block">
@@ -84,26 +101,38 @@ export default function Navigation() {
                         <SheetContent side="right" className="w-[300px] border-l-white/10 bg-black/95">
                             <div className="flex flex-col gap-4 mt-8">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-sm font-medium text-gray-400">Menu</span>
+                                    <span className="text-sm font-medium text-gray-400">
+                                        {roomie?.name || 'Invitado'}
+                                    </span>
                                     <LoginButton />
                                 </div>
+
+                                <div className="py-2 flex flex-col gap-2">
+                                    <InstallPWA />
+                                    <PushManager />
+                                </div>
+
                                 <SearchCommand />
-                                {routes.map((route) => (
-                                    <Link
-                                        key={route.href}
-                                        href={route.href}
-                                        onClick={() => setIsOpen(false)}
-                                        className={cn(
-                                            "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                                            pathname === route.href
-                                                ? "bg-white/10 text-white"
-                                                : "text-gray-400 hover:text-white hover:bg-white/5"
-                                        )}
-                                    >
-                                        <route.icon className="h-4 w-4" />
-                                        {route.label}
-                                    </Link>
-                                ))}
+
+                                {routes.map((route) => {
+                                    const Icon = route.icon;
+                                    return (
+                                        <Link
+                                            key={route.href}
+                                            href={route.href}
+                                            onClick={() => setIsOpen(false)}
+                                            className={cn(
+                                                "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                                                pathname === route.href
+                                                    ? "bg-white/10 text-white"
+                                                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                                            )}
+                                        >
+                                            <Icon className="h-4 w-4" />
+                                            {route.label}
+                                        </Link>
+                                    );
+                                })}
                             </div>
                         </SheetContent>
                     </Sheet>

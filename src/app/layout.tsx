@@ -38,22 +38,30 @@ export const viewport = {
   userScalable: false,
 };
 
+import PWARegister from "@/components/PWARegister";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="dark">
-      <body className={`${outfit.variable} ${inter.variable} font-sans antialiased bg-black text-white selection:bg-cyan-500/30`}>
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
         <link rel="manifest" href="/manifest.json" />
+      </head>
+      <body
+        className={`${outfit.variable} ${inter.variable} antialiased bg-black text-white`}
+      >
+        <PWARegister />
         <QueryProvider>
           <AuthProvider>
             <Navigation />
-            <main className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+            <main className="pb-20 md:pb-0 md:pl-64 pt-16 md:pt-0 min-h-screen">
               {children}
             </main>
-            <Toaster />
+            <Toaster position="top-center" theme="dark" />
           </AuthProvider>
         </QueryProvider>
       </body>

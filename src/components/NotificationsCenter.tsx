@@ -152,7 +152,12 @@ export default function NotificationsCenter() {
                                 >
                                     <div className="flex gap-3">
                                         <div className={`mt-1 ${getIconColor(notification.type)}`}>
-                                            <div className="h-2 w-2 rounded-full bg-current" />
+                                            {!notification.is_read && (
+                                                <div className="h-2 w-2 rounded-full bg-current" />
+                                            )}
+                                            {notification.is_read && (
+                                                <div className="h-2 w-2 rounded-full border border-current opacity-30" />
+                                            )}
                                         </div>
                                         <div className="flex-1 space-y-1">
                                             <p className={cn("text-sm font-medium text-white", !notification.is_read && "font-bold")}>
