@@ -62,9 +62,9 @@ export default function PushManager() {
 
             setIsSubscribed(true);
             toast.success("Notificaciones activadas en este dispositivo");
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to subscribe the user: ', error);
-            toast.error("Error al activar notificaciones");
+            toast.error(`Error: ${error.message || 'No se pudo activar'}`);
         } finally {
             setLoading(false);
         }
@@ -89,7 +89,7 @@ export default function PushManager() {
             disabled={loading}
         >
             <BellOff className="w-4 h-4" />
-            {loading ? "Activando..." : "Activar Alertas"}
+            <span className="hidden lg:inline">{loading ? "Activando..." : "Activar Alertas"}</span>
         </Button>
     );
 }

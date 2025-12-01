@@ -83,8 +83,12 @@ export default function Navigation() {
                         <SearchCommand />
                     </div>
 
-                    <InstallPWA />
-                    <PushManager />
+                    {/* Desktop Buttons - Hidden on Mobile */}
+                    <div className="hidden md:flex items-center gap-2">
+                        <InstallPWA />
+                        <PushManager />
+                    </div>
+
                     <NotificationsCenter />
 
                     <div className="hidden md:block">

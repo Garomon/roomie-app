@@ -78,7 +78,7 @@ export default function InstallPWA() {
                 onClick={onClick}
             >
                 <Download className="w-4 h-4" />
-                Instalar App
+                <span className="hidden lg:inline">Instalar App</span>
             </Button>
 
             <Dialog open={showIOSInstructions} onOpenChange={setShowIOSInstructions}>
