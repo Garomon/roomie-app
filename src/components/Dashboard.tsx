@@ -309,7 +309,7 @@ export default function Dashboard() {
                             Vibra Alta
                         </Badge>
                         <h1 className="text-4xl md:text-6xl font-bold font-heading text-white mb-2 tracking-tight">
-                            Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">{currentRoomie?.name || 'Roomie'}</span> (v3.1)
+                            Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">{currentRoomie?.name || 'Roomie'}</span> (v3.2)
                         </h1>
                         <p className="text-gray-400 text-lg max-w-md">
                             {myPendingChores > 0
