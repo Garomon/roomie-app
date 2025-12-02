@@ -290,90 +290,64 @@ export default function ChoresTracker() {
                                   {assignedRoomie.name}
                                 </Badge>
                               )}
+                            </div>
+                          </ScrollArea>
+                        </CardContent>
+                      </Card>
+        </TabsContent>
 
-                              {chore.priority && (
-                                <Badge className={`text-xs ${getPriorityColor(chore.priority)}`}>
-                                  {chore.priority === 'high' ? '🔴' : chore.priority === 'medium' ? '🟡' : '🟢'}
-                                  {chore.priority.charAt(0).toUpperCase() + chore.priority.slice(1)}
-                                </Badge>
-                              )}
-
-                              {dueStatus && (
-                                <Badge variant="outline" className={`text-xs ${dueStatus.className}`}>
-                                  <Calendar className="w-3 h-3 mr-1" />
-                                  {dueStatus.text}
-                                </Badge>
-                              )}
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                <TabsContent value="rules" className="mt-6">
+                  <div className="grid gap-6">
+                    <Card className="bg-gradient-to-br from-orange-900/20 to-red-900/20 border-orange-500/20">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-orange-400">
+                          <Utensils className="w-5 h-5" />
+                          Cocina y Trastes
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex gap-4 items-start p-4 bg-black/20 rounded-lg">
+                          <AlertCircle className="w-6 h-6 text-red-400 shrink-0 mt-1" />
+                          <div>
+                            <h4 className="font-bold text-white mb-1">Cero &quot;Dejar para después&quot;</h4>
+                            <p className="text-sm text-gray-300">
+                              Si cocinas, lavas. Los trastes sucios se lavan <strong>inmediatamente</strong>.
+                              Nada de &quot;se remoja&quot; ni &quot;mañana temprano&quot;.
+                            </p>
                           </div>
                         </div>
-                        );
-                  })}
-                        {sortedChores.length === 0 && (
-                          <div className="text-center py-12 text-gray-500">
-                            <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                            <p>¡Todo limpio! Disfruten la vibra alta.</p>
+                        <div className="flex gap-4 items-start p-4 bg-black/20 rounded-lg">
+                          <Trash2 className="w-6 h-6 text-orange-400 shrink-0 mt-1" />
+                          <div>
+                            <h4 className="font-bold text-white mb-1">Domingo de Descarte</h4>
+                            <p className="text-sm text-gray-300">
+                              Los alimentos caducados se tiran. La limpieza del refri es obligatoria cada domingo.
+                            </p>
                           </div>
-                        )}
-                      </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-        <TabsContent value="rules" className="mt-6">
-          <div className="grid gap-6">
-            <Card className="bg-gradient-to-br from-orange-900/20 to-red-900/20 border-orange-500/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-orange-400">
-                  <Utensils className="w-5 h-5" />
-                  Cocina y Trastes
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-4 items-start p-4 bg-black/20 rounded-lg">
-                  <AlertCircle className="w-6 h-6 text-red-400 shrink-0 mt-1" />
-                  <div>
-                    <h4 className="font-bold text-white mb-1">Cero &quot;Dejar para después&quot;</h4>
-                    <p className="text-sm text-gray-300">
-                      Si cocinas, lavas. Los trastes sucios se lavan <strong>inmediatamente</strong>.
-                      Nada de &quot;se remoja&quot; ni &quot;mañana temprano&quot;.
-                    </p>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Limpieza General</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-3">
+                          <li className="flex items-center gap-3 text-gray-300">
+                            <Badge variant="outline">Limpieza Pro</Badge>
+                            Se paga con la Caja Común (Semanal/Quincenal).
+                          </li>
+                          <li className="flex items-center gap-3 text-gray-300">
+                            <Badge variant="outline">Cuarto de Servicio</Badge>
+                            Área Chill común. No es bodega ni habitación privada.
+                          </li>
+                        </ul>
+                      </CardContent>
+                    </Card>
                   </div>
-                </div>
-                <div className="flex gap-4 items-start p-4 bg-black/20 rounded-lg">
-                  <Trash2 className="w-6 h-6 text-orange-400 shrink-0 mt-1" />
-                  <div>
-                    <h4 className="font-bold text-white mb-1">Domingo de Descarte</h4>
-                    <p className="text-sm text-gray-300">
-                      Los alimentos caducados se tiran. La limpieza del refri es obligatoria cada domingo.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Limpieza General</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  <li className="flex items-center gap-3 text-gray-300">
-                    <Badge variant="outline">Limpieza Pro</Badge>
-                    Se paga con la Caja Común (Semanal/Quincenal).
-                  </li>
-                  <li className="flex items-center gap-3 text-gray-300">
-                    <Badge variant="outline">Cuarto de Servicio</Badge>
-                    Área Chill común. No es bodega ni habitación privada.
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
+                </TabsContent>
+              </Tabs>
+            </div>
+            );
 }
