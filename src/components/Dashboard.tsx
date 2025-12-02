@@ -234,8 +234,8 @@ export default function Dashboard() {
                     </div>
 
                     {/* Boss Card */}
-                    <div className="glass-card rounded-2xl p-6 w-full md:w-auto min-w-[300px] border-l-4 border-l-purple-500 relative group">
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="glass-card rounded-2xl p-6 w-full md:w-auto min-w-[300px] border-l-4 border-l-purple-500 relative">
+                        <div className="absolute top-2 right-2">
                             <SettingsModal />
                         </div>
                         <div className="flex items-center gap-4 mb-4">
