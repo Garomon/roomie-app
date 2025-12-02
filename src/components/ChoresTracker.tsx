@@ -304,63 +304,19 @@ export default function ChoresTracker() {
                                   {dueStatus.text}
                                 </Badge>
                               )}
-                            </div>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
                         </div>
-
-                        <div className="flex items-center gap-1">
-                          {!chore.completed && chore.assigned_to && chore.assigned_to !== roomie?.id && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                const assigned = getAssignedRoomie(chore.assigned_to);
-                                if (!assigned) return;
-
-                                toast.promise(
-                                  fetch("/api/push/send", {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({
-                                      roomieId: chore.assigned_to,
-                                      title: "🔔 Recordatorio de Tarea",
-                                      message: `${roomie?.name || 'Alguien'} te recuerda: ${chore.task}`,
-                                      url: "/chores"
-                                    })
-                                  }),
-                                  {
-                                    loading: 'Enviando zumbido...',
-                                    success: `Recordatorio enviado a ${assigned.name}`,
-                                    error: 'No se pudo enviar el recordatorio'
-                                  }
-                                );
-                              }}
-                              className="opacity-0 group-hover:opacity-100 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-900/20 flex-shrink-0 transition-opacity"
-                              title="Enviar recordatorio"
-                            >
-                              <Bell className="w-4 h-4" />
-                            </Button>
-                          )}
-
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => deleteChore(chore.id)}
-                            className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 hover:bg-red-900/20 flex-shrink-0 transition-opacity"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
+                        );
                   })}
-                  {sortedChores.length === 0 && (
-                    <div className="text-center py-12 text-gray-500">
-                      <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                      <p>¡Todo limpio! Disfruten la vibra alta.</p>
-                    </div>
-                  )}
-                </div>
+                        {sortedChores.length === 0 && (
+                          <div className="text-center py-12 text-gray-500">
+                            <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                            <p>¡Todo limpio! Disfruten la vibra alta.</p>
+                          </div>
+                        )}
+                      </div>
               </ScrollArea>
             </CardContent>
           </Card>
