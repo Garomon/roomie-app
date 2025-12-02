@@ -172,7 +172,7 @@ export default function Dashboard() {
         show: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.1
+                staggerChildren: 0.3
             }
         }
     };
@@ -190,18 +190,23 @@ export default function Dashboard() {
             className="space-y-8"
         >
             {/* Hero Section */}
-            <motion.div variants={item} className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-900/50 via-black to-cyan-900/50 p-8 border border-white/10 shadow-2xl">
-                <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-cyan-500/20 blur-3xl" />
-                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-64 w-64 rounded-full bg-purple-500/20 blur-3xl" />
+            <motion.div variants={item} className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-8 border border-white/20 shadow-2xl">
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-cyan-400/30 blur-3xl animate-pulse" />
+                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-64 w-64 rounded-full bg-yellow-400/20 blur-3xl animate-pulse" />
 
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div>
-                        <Badge variant="vibra" className="mb-4">
-                            <Sparkles className="w-3 h-3 mr-1" />
-                            Vibra Alta
-                        </Badge>
-                        <h1 className="text-4xl md:text-6xl font-bold font-heading text-white mb-2 tracking-tight">
-                            Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">{currentRoomie?.name || 'Roomie'}</span> <span className="text-lg text-gray-500 font-mono">({APP_CONFIG.appVersion})</span>
+                        <div className="flex items-center gap-2 mb-4">
+                            <Badge variant="vibra" className="bg-white/20 border-white/40 text-white">
+                                <Sparkles className="w-3 h-3 mr-1" />
+                                Vibra Alta
+                            </Badge>
+                            <Badge variant="destructive" className="animate-bounce">
+                                NEW UI
+                            </Badge>
+                        </div>
+                        <h1 className="text-4xl md:text-6xl font-bold font-heading text-white mb-2 tracking-tight drop-shadow-lg">
+                            Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-white">{currentRoomie?.name || 'Roomie'}</span> <span className="text-lg text-white/80 font-mono">({APP_CONFIG.appVersion})</span>
                         </h1>
                         <p className="text-gray-400 text-lg max-w-md">
                             {myPendingChores > 0
