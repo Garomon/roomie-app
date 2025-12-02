@@ -17,8 +17,10 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
 import { useRoomies } from "@/hooks/useRoomies";
 
+import { useBoss } from "@/hooks/useBoss";
+
 export default function Dashboard() {
-    const [boss, setCurrentBoss] = useState<Roomie | null>(null);
+    const { currentBoss: boss, loading: bossLoading } = useBoss();
     const [rentInfo, setRentInfo] = useState<RentStatus | null>(null);
     const [commonBoxTotal, setCommonBoxTotal] = useState(0);
     const [rentCollected, setRentCollected] = useState(0);
@@ -27,7 +29,7 @@ export default function Dashboard() {
     const [paidPoolRoomies, setPaidPoolRoomies] = useState<string[]>([]);
     const [debugError, setDebugError] = useState<string | null>(null);
 
-    const { roomie: currentRoomie, user, loading, signInWithGoogle, linkRoomie } = useAuth();
+    const { roomie: currentRoomie, user, loading: authLoading, signInWithGoogle, linkRoomie } = useAuth();
     const { roomies } = useRoomies();
     const [myPendingChores, setMyPendingChores] = useState(0);
     const [myDebt, setMyDebt] = useState(0);
@@ -39,8 +41,6 @@ export default function Dashboard() {
     useEffect(() => {
 
         const rent = getDaysUntilRentDue();
-
-        setCurrentBoss(boss);
         setRentInfo(rent);
         setMounted(true);
 
@@ -157,7 +157,7 @@ export default function Dashboard() {
         setReliabilityScore(score);
     };
 
-    if (loading || !mounted) {
+    if (authLoading || bossLoading || !mounted) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-black">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
