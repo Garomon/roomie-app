@@ -1,6 +1,6 @@
 export const APP_CONFIG = {
     launchDate: "25 de Noviembre de 2025",
-    appVersion: "v4.0",
+    appVersion: "v4.1",
     roomies: [
         {
             id: "edgardo",
