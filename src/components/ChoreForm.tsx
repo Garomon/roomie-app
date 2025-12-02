@@ -36,6 +36,18 @@ export default function ChoreForm({ onSubmit }: ChoreFormProps) {
             recurring
         });
 
+        // Send Push Notification
+        fetch("/api/push/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                roomieId: assignedTo,
+                title: "Nueva Tarea Asignada 🧹",
+                message: `Te toca: ${task.trim()}`,
+                url: "/chores"
+            })
+        }).catch(err => console.error("Error sending push:", err));
+
         // Reset form
         setTask("");
         setDueDate("");

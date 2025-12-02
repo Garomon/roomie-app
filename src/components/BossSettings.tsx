@@ -69,7 +69,7 @@ export default function BossSettings() {
                         <Label className="text-base">Modo de Selección</Label>
                         <RadioGroup
                             value={config.mode}
-                            onValueChange={(val) => handleModeChange(val as 'fixed' | 'rotation')}
+                            onValueChange={(val: string) => handleModeChange(val as 'fixed' | 'rotation')}
                             className="grid grid-cols-2 gap-4"
                         >
                             <div>

@@ -112,6 +112,21 @@ export default function FinanceTracker() {
             fetchPayments();
             setReceiptUrl(""); // Reset receipt
             toast.success("Pago registrado con éxito");
+
+            // Broadcast Push Notification
+            const roomieName = ROOMIES.find(r => r.id === roomieId)?.name || "Alguien";
+            const typeLabel = type === 'rent' ? 'Renta' : type === 'pool' ? 'Caja Común' : 'Pago al Casero';
+
+            fetch("/api/push/broadcast", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    senderId: currentRoomie?.id,
+                    title: "Pago Registrado 💸",
+                    message: `${roomieName} pagó $${amount} de ${typeLabel}`,
+                    url: "/finance"
+                })
+            }).catch(err => console.error("Error broadcasting push:", err));
         } catch (error) {
             toast.error("Error al registrar pago");
         }
