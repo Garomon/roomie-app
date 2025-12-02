@@ -18,13 +18,13 @@ import { useAuth } from "@/components/AuthProvider";
 import { useRoomies } from "@/hooks/useRoomies";
 import { useBoss } from "@/hooks/useBoss";
 import { useFinancials } from "@/hooks/useFinancials";
+import { APP_CONFIG } from "@/lib/appConfig";
 
 export default function Dashboard() {
     const { currentBoss: boss, loading: bossLoading } = useBoss();
     const { roomie: currentRoomie, user, loading: authLoading, signInWithGoogle, linkRoomie } = useAuth();
     const { roomies } = useRoomies();
 
-    // Quantum Architecture: Using Custom Hook for Financial Logic
     const {
         rentCollected,
         commonBoxTotal,
@@ -39,7 +39,7 @@ export default function Dashboard() {
     const [rentInfo, setRentInfo] = useState<RentStatus | null>(null);
     const [mounted, setMounted] = useState(false);
 
-    const RENT_GOAL = 32000;
+    const RENT_GOAL = APP_CONFIG.finance.totalRent;
     const rentProgress = (rentCollected / RENT_GOAL) * 100;
 
     useEffect(() => {
@@ -200,7 +200,7 @@ export default function Dashboard() {
                             Vibra Alta
                         </Badge>
                         <h1 className="text-4xl md:text-6xl font-bold font-heading text-white mb-2 tracking-tight">
-                            Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">{currentRoomie?.name || 'Roomie'}</span> (v3.5)
+                            Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">{currentRoomie?.name || 'Roomie'}</span> <span className="text-lg text-gray-500 font-mono">({APP_CONFIG.appVersion})</span>
                         </h1>
                         <p className="text-gray-400 text-lg max-w-md">
                             {myPendingChores > 0

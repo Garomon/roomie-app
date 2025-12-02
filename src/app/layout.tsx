@@ -5,6 +5,7 @@ import Navigation from "@/components/Navigation";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/AuthProvider";
 import { QueryProvider } from "@/components/QueryProvider";
+import { APP_CONFIG } from "@/lib/appConfig";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -17,7 +18,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Vibra Alta | Depto 3 (v3.5)",
+  title: `Vibra Alta | Depto 3 (${APP_CONFIG.appVersion})`,
   description: "Gestión de departamento y convivencia - Vibra Alta",
   manifest: "/manifest.json",
   appleWebApp: {

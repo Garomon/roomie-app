@@ -1,38 +1,19 @@
 import { Roomie, RentInfo } from "@/types";
+import { APP_CONFIG } from "@/lib/appConfig";
 
-export const ROOMIES: Roomie[] = [
-    {
-        id: "alejandro",
-        name: "Dora",
-        rent: 7000,
-        hasCloset: false,
-        color: "from-blue-500 to-cyan-500",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alejandro",
-        email: "alejandro@example.com"
-    },
-    {
-        id: "edgardo",
-        name: "Garo",
-        rent: 14500,
-        hasCloset: true,
-        color: "from-purple-500 to-pink-500",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Edgardo",
-        email: "edgardo@example.com"
-    },
-    {
-        id: "james",
-        name: "James",
-        rent: 10500,
-        hasCloset: true,
-        color: "from-orange-500 to-red-500",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=James",
-        email: "james@example.com"
-    }
-];
+export const ROOMIES: Roomie[] = APP_CONFIG.roomies.map(r => ({
+    id: r.id,
+    name: r.name.split(' ')[0], // Use first name for display
+    rent: r.rent,
+    hasCloset: r.room.includes("Clóset") && !r.room.includes("sin Clóset"), // Simple heuristic
+    color: r.id === 'edgardo' ? "from-purple-500 to-pink-500" : r.id === 'alejandro' ? "from-blue-500 to-cyan-500" : "from-orange-500 to-red-500", // Keep colors hardcoded or move to config later
+    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${r.name.split(' ')[0]}`,
+    email: `${r.id}@example.com` // Placeholder
+}));
 
-// Rotation: Alejandro -> Edgardo -> James
+// Rotation: Derived from config
 // Base Date: November 2025 (Month 0 of the cycle)
-const BOSS_ROTATION = ["alejandro", "edgardo", "james"];
+const BOSS_ROTATION = APP_CONFIG.bossRotation.map(r => r.roomieId);
 const START_DATE = new Date(2025, 10, 1); // November 1, 2025 (Month is 0-indexed, so 10 is Nov)
 
 export interface BossConfig {

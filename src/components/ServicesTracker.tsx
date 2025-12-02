@@ -21,7 +21,7 @@ interface ServicesTrackerProps {
 
 export default function ServicesTracker({ services, setServices }: ServicesTrackerProps) {
     const total = Object.values(services).reduce((acc, val) => acc + (parseFloat(val) || 0), 0);
-    const perPerson = total / 3;
+    const perPerson = total / ROOMIES.length;
 
     return (
         <div className="space-y-6">

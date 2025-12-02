@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import ServicesTracker from "./ServicesTracker";
 import { generateMonthlyReport } from "@/lib/pdfGenerator";
 import { Download } from "lucide-react";
+import { APP_CONFIG, formatCurrency } from "@/lib/appConfig";
 
 const FinanceCharts = dynamic(() => import('./FinanceCharts'), { ssr: false });
 
@@ -199,46 +200,51 @@ export default function FinanceTracker() {
                 <TabsContent value="rent" className="mt-6 space-y-6">
                     {/* Boss Landlord Payment Section */}
                     {boss && currentRoomie?.id === boss.id && (
-                        <Card className="bg-gradient-to-r from-purple-900/20 to-cyan-900/20 border-purple-500/30">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Sparkles className="w-5 h-5 text-yellow-400" />
+                        <Card className="bg-gradient-to-r from-purple-900/40 to-cyan-900/40 border-purple-500/50 shadow-lg shadow-purple-900/20 overflow-hidden relative group">
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <CardHeader className="relative z-10">
+                                <CardTitle className="flex items-center gap-3 text-2xl">
+                                    <div className="p-2 bg-yellow-500/20 rounded-lg border border-yellow-500/50">
+                                        <Sparkles className="w-6 h-6 text-yellow-400 animate-pulse" />
+                                    </div>
                                     Panel del Boss: Pago al Casero
                                 </CardTitle>
-                                <CardDescription>
-                                    Una vez que juntes los $32,000, sube el comprobante final aquí.
+                                <CardDescription className="text-gray-300 text-lg">
+                                    Misión: Juntar los <span className="font-bold text-white">{formatCurrency(APP_CONFIG.finance.totalRent)}</span> y pagar antes del día {APP_CONFIG.finance.landlordPaymentDay}.
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="relative z-10">
                                 {getPaymentStatus(boss.id, 'landlord') ? (
-                                    <div className="flex items-center gap-2 text-emerald-400 bg-emerald-500/10 p-4 rounded-lg border border-emerald-500/20">
-                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                        <span className="font-bold">¡Renta Pagada al Casero! Misión Cumplida.</span>
+                                    <div className="flex items-center gap-4 text-emerald-400 bg-emerald-500/10 p-6 rounded-xl border border-emerald-500/30 backdrop-blur-sm">
+                                        <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
+                                        <span className="font-bold text-xl">¡Renta Pagada al Casero! Misión Cumplida.</span>
                                         {getPaymentStatus(boss.id, 'landlord')?.receipt_url && (
                                             <a
                                                 href={getPaymentStatus(boss.id, 'landlord')?.receipt_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="ml-auto text-xs underline hover:text-emerald-300"
+                                                className="ml-auto text-sm underline hover:text-emerald-300 font-medium"
                                             >
                                                 Ver Comprobante
                                             </a>
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col gap-4">
-                                        <div className="flex items-center justify-between p-4 bg-black/20 rounded-lg">
-                                            <span className="text-gray-300">Monto Total a Pagar:</span>
-                                            <span className="text-2xl font-mono font-bold text-white">$32,000.00</span>
+                                    <div className="flex flex-col gap-6">
+                                        <div className="flex items-center justify-between p-6 bg-black/40 rounded-xl border border-white/10">
+                                            <span className="text-gray-300 text-lg">Monto Total a Pagar:</span>
+                                            <span className="text-4xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
+                                                {formatCurrency(APP_CONFIG.finance.totalRent)}
+                                            </span>
                                         </div>
                                         <div className="flex items-end gap-4">
                                             <div className="flex-1">
                                                 <ReceiptUpload onUploadComplete={setReceiptUrl} bucketName="receipts" />
                                             </div>
                                             <Button
-                                                className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                                                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold h-12 px-8 shadow-lg shadow-purple-500/25 transition-all hover:scale-105"
                                                 disabled={!receiptUrl}
-                                                onClick={() => markAsPaid(boss.id, 32000, 'landlord')}
+                                                onClick={() => markAsPaid(boss.id, APP_CONFIG.finance.totalRent, 'landlord')}
                                             >
                                                 Confirmar Pago al Casero 🏠
                                             </Button>
@@ -249,10 +255,10 @@ export default function FinanceTracker() {
                         </Card>
                     )}
 
-                    <Card>
+                    <Card className="border-white/10 bg-black/20">
                         <CardHeader>
                             <CardTitle>Desglose de Renta</CardTitle>
-                            <CardDescription>Total a recaudar: $32,000 MXN (Día 30)</CardDescription>
+                            <CardDescription>Total a recaudar: {formatCurrency(APP_CONFIG.finance.totalRent)} MXN (Día {APP_CONFIG.finance.paymentDeadlineDay})</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -269,27 +275,27 @@ export default function FinanceTracker() {
                                         const status = getPaymentStatus(roomie.id, 'rent');
 
                                         return (
-                                            <TableRow key={roomie.id} className="border-white/5">
-                                                <TableCell className="font-medium text-white flex items-center gap-2">
-                                                    <Avatar className="h-8 w-8 border border-white/10">
+                                            <TableRow key={roomie.id} className="border-white/5 hover:bg-white/5 transition-colors group">
+                                                <TableCell className="font-medium text-white flex items-center gap-3">
+                                                    <Avatar className="h-10 w-10 border-2 border-transparent group-hover:border-cyan-500/50 transition-all">
                                                         <AvatarImage src={roomie.avatar} />
                                                         <AvatarFallback>{roomie.name[0]}</AvatarFallback>
                                                     </Avatar>
-                                                    {roomie.name}
+                                                    <span className="group-hover:text-cyan-400 transition-colors">{roomie.name}</span>
                                                 </TableCell>
-                                                <TableCell className="text-right font-mono text-white">${roomie.rent.toLocaleString()}</TableCell>
+                                                <TableCell className="text-right font-mono text-white text-lg">${roomie.rent.toLocaleString()}</TableCell>
                                                 <TableCell className="text-center">
                                                     {status ? (
-                                                        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/50">Pagado</Badge>
+                                                        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/50 px-3 py-1">Pagado</Badge>
                                                     ) : (
-                                                        <Badge variant="outline" className="text-gray-500 border-gray-700">Pendiente</Badge>
+                                                        <Badge variant="outline" className="text-gray-500 border-gray-700 px-3 py-1">Pendiente</Badge>
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     {!status && isBoss && (
                                                         <Button
                                                             size="sm"
-                                                            className="bg-white text-black hover:bg-gray-200"
+                                                            className="bg-white text-black hover:bg-gray-200 font-medium"
                                                             onClick={() => markAsPaid(roomie.id, roomie.rent, 'rent')}
                                                         >
                                                             Marcar Pagado
@@ -308,7 +314,7 @@ export default function FinanceTracker() {
                 <TabsContent value="pool" className="mt-6 space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Caja Común ($500/mes)</CardTitle>
+                            <CardTitle>Caja Común ({formatCurrency(APP_CONFIG.finance.commonFund)}/mes)</CardTitle>
                             <CardDescription>Fondo para insumos de limpieza y emergencias.</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -335,7 +341,7 @@ export default function FinanceTracker() {
                                                 <Button
                                                     size="sm"
                                                     variant="secondary"
-                                                    onClick={() => markAsPaid(roomie.id, 500, 'pool')}
+                                                    onClick={() => markAsPaid(roomie.id, APP_CONFIG.finance.commonFund, 'pool')}
                                                 >
                                                     Marcar Pagado
                                                 </Button>

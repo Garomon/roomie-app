@@ -5,8 +5,44 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Heart, Shield, Zap } from "lucide-react";
 import BiometricCommitment from "@/components/BiometricCommitment";
+import { APP_CONFIG, formatCurrency } from "@/lib/appConfig";
+import { useAuth } from "@/components/AuthProvider";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export default function ManifestoViewer() {
+    const { user } = useAuth();
+
+    const handleCommit = async () => {
+        try {
+            // Always set local storage for immediate feedback/offline
+            localStorage.setItem("manifesto_signed", "true");
+
+            if (user) {
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({ manifesto_signed_at: new Date().toISOString() })
+                    .eq('id', user.id);
+
+                if (error) {
+                    console.error("Error updating profile:", error);
+                    // Don't block the user if backend fails, just log it
+                }
+            }
+
+            toast.success("¡Compromiso sellado! Bienvenido a la tribu.");
+
+            // Small delay for the toast to be seen
+            setTimeout(() => {
+                window.location.href = "/";
+            }, 1000);
+
+        } catch (error) {
+            console.error("Error in commitment:", error);
+            window.location.href = "/";
+        }
+    };
+
     const sections = [
         {
             title: "Propósito",
@@ -15,8 +51,8 @@ export default function ManifestoViewer() {
                 <div className="space-y-4">
                     <p>Vivir juntos con buena vibra, claridad desde el inicio y cero malentendidos. La idea es que el departamento sea un HOGAR funcional donde todos podamos descansar y crecer profesionalmente.</p>
                     <div className="text-sm text-gray-400 space-y-1">
-                        <p><strong>Fecha de Lanzamiento:</strong> 25 de Noviembre de 2025 (Lets gooo!!)</p>
-                        <p><strong>Integrantes:</strong> Edgardo Montoya De Tellitu, James Thomas Kennedy y Alejandro Dorantes Andrade.</p>
+                        <p><strong>Fecha de Lanzamiento:</strong> {APP_CONFIG.launchDate} (Lets gooo!!)</p>
+                        <p><strong>Integrantes:</strong> {APP_CONFIG.roomies.map(r => r.fullName).join(", ")}.</p>
                     </div>
                 </div>
             )
@@ -35,26 +71,18 @@ export default function ManifestoViewer() {
                                 <div className="col-span-4">Espacio Asignado</div>
                                 <div className="col-span-4 text-right">Renta Individual</div>
                             </div>
-                            <div className="grid grid-cols-12 gap-2 border-b border-white/10 pb-2 items-center">
-                                <div className="col-span-4">Edgardo Montoya</div>
-                                <div className="col-span-4 text-xs">Habitación con Baño y Estudio (PA)</div>
-                                <div className="col-span-4 text-right font-mono text-cyan-400">$14,500.00</div>
-                            </div>
-                            <div className="grid grid-cols-12 gap-2 border-b border-white/10 pb-2 items-center">
-                                <div className="col-span-4">James Kennedy</div>
-                                <div className="col-span-4 text-xs">Habitación con Clóset (PB)</div>
-                                <div className="col-span-4 text-right font-mono text-cyan-400">$10,500.00</div>
-                            </div>
-                            <div className="grid grid-cols-12 gap-2 border-b border-white/10 pb-2 items-center">
-                                <div className="col-span-4">Alejandro Dorantes</div>
-                                <div className="col-span-4 text-xs">Habitación sin Clóset (PB)</div>
-                                <div className="col-span-4 text-right font-mono text-cyan-400">$7,000.00</div>
-                            </div>
+                            {APP_CONFIG.roomies.map((roomie) => (
+                                <div key={roomie.id} className="grid grid-cols-12 gap-2 border-b border-white/10 pb-2 items-center">
+                                    <div className="col-span-4">{roomie.name}</div>
+                                    <div className="col-span-4 text-xs">{roomie.room}</div>
+                                    <div className="col-span-4 text-right font-mono text-cyan-400">{formatCurrency(roomie.rent)}</div>
+                                </div>
+                            ))}
                             <div className="grid grid-cols-12 gap-2 font-bold pt-1 items-center">
                                 <div className="col-span-8">TOTAL RENTA MENSUAL</div>
-                                <div className="col-span-4 text-right font-mono text-emerald-400">$32,000.00</div>
+                                <div className="col-span-4 text-right font-mono text-emerald-400">{formatCurrency(APP_CONFIG.finance.totalRent)}</div>
                             </div>
-                            <p className="text-xs text-center text-gray-500 mt-2">Fecha Límite de Pago al &apos;Boss&apos;: Día 30 de cada mes</p>
+                            <p className="text-xs text-center text-gray-500 mt-2">Fecha Límite de Pago al &apos;Boss&apos;: Día {APP_CONFIG.finance.paymentDeadlineDay} de cada mes</p>
                         </div>
                     </div>
 
@@ -62,13 +90,18 @@ export default function ManifestoViewer() {
                         <h3 className="font-bold text-white">A. El &apos;Boss&apos; del Mes (Protocolo Dinámico)</h3>
                         <ul className="list-decimal list-inside space-y-2 text-gray-300 pl-2">
                             <li><strong>Flexibilidad:</strong> El sistema permite dos modos: <em>Rotación Automática</em> (lo estándar) o <em>Boss Fijo</em> (si alguien quiere aventarse el tiro por más tiempo). Esto se configura democráticamente en la App.</li>
-                            <li><strong>Rotación:</strong> En modo rotación, ser el Boss significa que te toca juntar la lana ($32,000.00 MXN) de la renta y los servicios. La responsabilidad rota mensualmente.</li>
-                            <li><strong>Deadline:</strong> El Boss del Mes debe asegurar que el pago total llegue al Arrendador el Día 1 de cada mes (No se puede fallar!).</li>
+                            <li><strong>Rotación:</strong> En modo rotación, ser el Boss significa que te toca juntar la lana ({formatCurrency(APP_CONFIG.finance.totalRent)} MXN) de la renta y los servicios. La responsabilidad rota mensualmente.</li>
+                            <li><strong>Deadline:</strong> El Boss del Mes debe asegurar que el pago total llegue al Arrendador el Día {APP_CONFIG.finance.landlordPaymentDay} de cada mes (No se puede fallar!).</li>
                             <li><strong>Ciclo de Rotación Fijo:</strong> Este es el calendario para el rol de Boss. El ciclo empieza con Alejandro:
                                 <ul className="list-disc list-inside pl-6 mt-1 space-y-1 text-sm">
-                                    <li>Alejandro Dorantes: Meses 1, 4, 7, 10...</li>
-                                    <li>Edgardo Montoya: Meses 2, 5, 8, 11...</li>
-                                    <li>James Kennedy: Meses 3, 6, 9, 12...</li>
+                                    {APP_CONFIG.bossRotation.slice(0, 3).map((rotation) => {
+                                        const roomie = APP_CONFIG.roomies.find(r => r.id === rotation.roomieId);
+                                        return (
+                                            <li key={rotation.month}>
+                                                {roomie?.name}: Meses {rotation.month}, {rotation.month + 3}, {rotation.month + 6}, {rotation.month + 9}...
+                                            </li>
+                                        );
+                                    })}
                                 </ul>
                             </li>
                         </ul>
@@ -76,7 +109,7 @@ export default function ManifestoViewer() {
 
                     <div className="space-y-2">
                         <h3 className="font-bold text-white">B. REGLA DE ORO DEL PAGO (Cero Tolerancia)</h3>
-                        <p className="text-gray-300">El pago de la renta individual al &apos;Boss&apos; (Día 30) es final e irrevocable. No hay espacio para &quot;pon mi parte y te repongo después&quot; o &quot;me faltan 5 días&quot;. El Boss necesita el dinero COMPLETO en tiempo y forma para pagar el día 1, sin tener que poner su propio dinero o perseguir el pago.</p>
+                        <p className="text-gray-300">El pago de la renta individual al &apos;Boss&apos; (Día {APP_CONFIG.finance.paymentDeadlineDay}) es final e irrevocable. No hay espacio para &quot;pon mi parte y te repongo después&quot; o &quot;me faltan 5 días&quot;. El Boss necesita el dinero COMPLETO en tiempo y forma para pagar el día {APP_CONFIG.finance.landlordPaymentDay}, sin tener que poner su propio dinero o perseguir el pago.</p>
                     </div>
 
                     <div className="space-y-2">
@@ -91,7 +124,7 @@ export default function ManifestoViewer() {
                     <div className="space-y-2">
                         <h3 className="font-bold text-white">D. La Caja Común (El Pool de Insumos)</h3>
                         <ul className="list-decimal list-inside space-y-2 text-gray-300 pl-2">
-                            <li><strong>Aportación:</strong> Cada uno pone $500.00 MXN (monto sujeto a ajuste) a esta caja los primeros 5 días del mes.</li>
+                            <li><strong>Aportación:</strong> Cada uno pone {formatCurrency(APP_CONFIG.finance.commonFund)} MXN (monto sujeto a ajuste) a esta caja los primeros 5 días del mes.</li>
                             <li><strong>Uso Exclusivo (Regla de Oro):</strong> Este fondo es INTOCABLE y solo se utiliza para los gastos comunes especificados a continuación:
                                 <ul className="list-disc list-inside pl-6 mt-1 space-y-1 text-sm">
                                     <li>Servicios de Limpieza: Pago al servicio de limpieza semanal contratado.</li>
@@ -164,21 +197,24 @@ export default function ManifestoViewer() {
                 {sections.map((section, index) => (
                     <motion.div
                         key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-50px" }}
+                        transition={{ duration: 0.6, delay: index * 0.1 }}
                     >
-                        <Card className="hover:border-white/20 transition-colors">
+                        <Card className="hover:border-cyan-500/30 transition-all duration-300 bg-black/40 backdrop-blur-sm border-white/10 group">
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-3 text-xl">
-                                    <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                                <CardTitle className="flex items-center gap-4 text-xl md:text-2xl font-heading tracking-wide">
+                                    <div className="p-3 rounded-xl bg-white/5 border border-white/10 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-black/50">
                                         {section.icon}
                                     </div>
-                                    {section.title}
+                                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:from-cyan-200 group-hover:to-white transition-all duration-300">
+                                        {section.title}
+                                    </span>
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-gray-300 leading-relaxed">
+                                <div className="text-gray-300 leading-relaxed text-lg font-light tracking-wide">
                                     {section.content}
                                 </div>
                             </CardContent>
@@ -189,12 +225,10 @@ export default function ManifestoViewer() {
 
             <div className="flex flex-col items-center justify-center pt-8 pb-12 gap-6">
                 <BiometricCommitment
-                    onCommit={() => {
-                        localStorage.setItem("manifesto_signed", "true");
-                        window.location.href = "/";
-                    }}
+                    onCommit={handleCommit}
                 />
             </div>
         </div>
     );
 }
+
