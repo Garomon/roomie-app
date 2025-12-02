@@ -35,7 +35,18 @@ export const ROOMIES: Roomie[] = [
 const BOSS_ROTATION = ["alejandro", "edgardo", "james"];
 const START_DATE = new Date(2025, 10, 1); // November 1, 2025 (Month is 0-indexed, so 10 is Nov)
 
+export const BOSS_CONFIG = {
+    mode: 'fixed' as 'fixed' | 'rotation', // Change to 'rotation' to enable auto-rotation
+    fixedBossId: 'alejandro' // Dora
+};
+
 export function getBossOfTheMonth(): Roomie {
+    // 1. Check for Fixed Mode
+    if (BOSS_CONFIG.mode === 'fixed') {
+        return ROOMIES.find(r => r.id === BOSS_CONFIG.fixedBossId) || ROOMIES[0];
+    }
+
+    // 2. Rotation Mode
     const today = new Date();
 
     // Calculate months passed since start date
