@@ -35,15 +35,20 @@ export const ROOMIES: Roomie[] = [
 const BOSS_ROTATION = ["alejandro", "edgardo", "james"];
 const START_DATE = new Date(2025, 10, 1); // November 1, 2025 (Month is 0-indexed, so 10 is Nov)
 
-export const BOSS_CONFIG = {
-    mode: 'fixed' as 'fixed' | 'rotation', // Change to 'rotation' to enable auto-rotation
-    fixedBossId: 'alejandro' // Dora
+export interface BossConfig {
+    mode: 'fixed' | 'rotation';
+    fixedBossId: string;
+}
+
+export const DEFAULT_BOSS_CONFIG: BossConfig = {
+    mode: 'fixed',
+    fixedBossId: 'alejandro'
 };
 
-export function getBossOfTheMonth(): Roomie {
+export function calculateBoss(config: BossConfig = DEFAULT_BOSS_CONFIG): Roomie {
     // 1. Check for Fixed Mode
-    if (BOSS_CONFIG.mode === 'fixed') {
-        return ROOMIES.find(r => r.id === BOSS_CONFIG.fixedBossId) || ROOMIES[0];
+    if (config.mode === 'fixed') {
+        return ROOMIES.find(r => r.id === config.fixedBossId) || ROOMIES[0];
     }
 
     // 2. Rotation Mode
@@ -59,6 +64,13 @@ export function getBossOfTheMonth(): Roomie {
 
     const bossId = BOSS_ROTATION[rotationIndex];
     return ROOMIES.find(r => r.id === bossId) || ROOMIES[0];
+}
+
+/**
+ * @deprecated Use useBoss hook instead for dynamic updates
+ */
+export function getBossOfTheMonth(): Roomie {
+    return calculateBoss(DEFAULT_BOSS_CONFIG);
 }
 
 export type UrgencyLevel = 'normal' | 'warning' | 'critical';
