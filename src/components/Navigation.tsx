@@ -44,7 +44,7 @@ export default function Navigation() {
                     <Link href="/" className="flex items-center gap-2">
                         <div className="relative h-8 w-8 overflow-hidden rounded-lg">
                             <Image
-                                src="/logo.png"
+                                src="/icon-192x192.png"
                                 alt="Logo"
                                 fill
                                 sizes="32px"
