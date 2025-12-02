@@ -17,147 +17,38 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
 import { useRoomies } from "@/hooks/useRoomies";
 
-import { useBoss } from "@/hooks/useBoss";
+import { useFinancials } from "@/hooks/useFinancials";
 
 export default function Dashboard() {
     const { currentBoss: boss, loading: bossLoading } = useBoss();
-    const [rentInfo, setRentInfo] = useState<RentStatus | null>(null);
-    const [commonBoxTotal, setCommonBoxTotal] = useState(0);
-    const [rentCollected, setRentCollected] = useState(0);
-    const [mounted, setMounted] = useState(false);
-    const [hasPaidRent, setHasPaidRent] = useState(false);
-    const [paidPoolRoomies, setPaidPoolRoomies] = useState<string[]>([]);
-    const [debugError, setDebugError] = useState<string | null>(null);
-
     const { roomie: currentRoomie, user, loading: authLoading, signInWithGoogle, linkRoomie } = useAuth();
     const { roomies } = useRoomies();
-    const [myPendingChores, setMyPendingChores] = useState(0);
-    const [myDebt, setMyDebt] = useState(0);
-    const [reliabilityScore, setReliabilityScore] = useState(100);
+
+    // Quantum Architecture: Using Custom Hook for Financial Logic
+    const {
+        rentCollected,
+        commonBoxTotal,
+        paidPoolRoomies,
+        hasPaidRent,
+        myPendingChores,
+        myDebt,
+        reliabilityScore,
+        loading: financialsLoading
+    } = useFinancials(currentRoomie);
+
+    const [rentInfo, setRentInfo] = useState<RentStatus | null>(null);
+    const [mounted, setMounted] = useState(false);
 
     const RENT_GOAL = 32000;
     const rentProgress = (rentCollected / RENT_GOAL) * 100;
 
     useEffect(() => {
-
         const rent = getDaysUntilRentDue();
         setRentInfo(rent);
         setMounted(true);
+    }, []);
 
-        const fetchFinancials = async () => {
-            const now = new Date();
-            const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-
-            // Calculate date range for the current month
-            const year = now.getFullYear();
-            const month = now.getMonth();
-            const startDate = new Date(year, month, 1).toISOString().split('T')[0];
-            const endDate = new Date(year, month + 1, 1).toISOString().split('T')[0];
-
-            console.log("Checking rent for:", currentRoomie?.id, "Month:", currentMonthStr);
-
-            // 1. Fetch Total Rent Collected
-            const { data: rentPayments, error: rentError } = await supabase
-                .from('payments')
-                .select('amount')
-                .eq('type', 'rent')
-                .gte('month_date', startDate)
-                .lt('month_date', endDate);
-
-            if (rentError) {
-                console.error("Rent Error:", rentError);
-                setDebugError(rentError.message);
-            }
-
-            const totalRent = rentPayments?.reduce((sum, p) => sum + p.amount, 0) || 0;
-            setRentCollected(totalRent);
-
-            // 2. Fetch Common Box
-            const { data: poolPayments, error: poolError } = await supabase
-                .from('payments')
-                .select('amount, roomie_id')
-                .eq('type', 'pool')
-                .gte('month_date', startDate)
-                .lt('month_date', endDate);
-
-            if (poolError) {
-                console.error("Pool Error:", poolError);
-                setDebugError(poolError.message);
-            }
-
-            const totalPool = poolPayments?.reduce((sum, p) => sum + p.amount, 0) || 0;
-            setCommonBoxTotal(totalPool);
-
-            // Store who has paid the pool
-            const paidPoolIds = poolPayments?.map(p => p.roomie_id) || [];
-            setPaidPoolRoomies(paidPoolIds);
-
-            // 3. Check if *I* have paid rent this month
-            if (currentRoomie) {
-                const { data: myPayments } = await supabase
-                    .from('payments')
-                    .select('*')
-                    .eq('type', 'rent')
-                    .eq('roomie_id', currentRoomie.id);
-
-                const paidThisMonth = myPayments?.some(p => {
-                    if (!p.month_date) return false;
-                    return p.month_date.includes(currentMonthStr);
-                });
-
-                console.log("Has paid rent?", paidThisMonth);
-                setHasPaidRent(!!paidThisMonth);
-
-                fetchUserData(currentRoomie.id);
-            }
-        };
-
-        fetchFinancials();
-
-        const channel = supabase
-            .channel('dashboard_payments')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'payments' },
-                () => {
-                    console.log("Payment change detected, refreshing dashboard...");
-                    fetchFinancials();
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [currentRoomie]);
-
-    const fetchUserData = async (userId: string) => {
-        const { count: choresCount } = await supabase
-            .from('chores')
-            .select('*', { count: 'exact', head: true })
-            .eq('assigned_to', userId)
-            .eq('completed', false);
-
-        setMyPendingChores(choresCount || 0);
-
-        const { data: debts } = await supabase
-            .from('expense_splits')
-            .select('amount')
-            .eq('owed_by', userId)
-            .eq('is_paid', false);
-
-        const totalDebt = debts?.reduce((sum, d) => sum + d.amount, 0) || 0;
-        setMyDebt(totalDebt);
-
-        // Calculate Reliability Score
-        // Base: 100
-        // -5 per overdue chore (assuming all pending are overdue for simplicity, or we check due_date)
-        // For now, let's just say pending chores reduce score by 5.
-        const score = Math.max(0, 100 - ((choresCount || 0) * 5));
-        setReliabilityScore(score);
-    };
-
-    if (authLoading || bossLoading || !mounted) {
+    if (authLoading || bossLoading || financialsLoading || !mounted) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-black">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
