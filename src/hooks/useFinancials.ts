@@ -131,6 +131,9 @@ export function useFinancials(currentRoomie: Roomie | null) {
             return () => {
                 supabase.removeChannel(channel);
             };
+        } else {
+            // If no roomie is logged in, we are not loading financials
+            setData(prev => ({ ...prev, loading: false }));
         }
     }, [currentRoomie?.id]);
 
