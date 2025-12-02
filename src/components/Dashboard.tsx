@@ -52,8 +52,8 @@ export default function Dashboard() {
 
     if (authLoading || bossLoading || (user && financialsLoading) || !mounted) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-black">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
             </div>
         );
     }
@@ -61,14 +61,14 @@ export default function Dashboard() {
     // Case 1: Not Logged In
     if (!user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-black p-4">
-                <Card className="w-full max-w-md bg-white/5 border-white/10">
+            <div className="min-h-screen flex items-center justify-center bg-sunset p-4">
+                <Card className="w-full max-w-md glass-card border-white/10">
                     <CardHeader className="text-center">
                         <div className="mx-auto w-16 h-16 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-purple-500/20">
                             <Sparkles className="w-8 h-8 text-white" />
                         </div>
                         <CardTitle className="text-2xl font-bold text-white">Roomie App V2</CardTitle>
-                        <p className="text-gray-400">Inicia sesión para ver tu dashboard</p>
+                        <p className="text-gray-200">Inicia sesión para ver tu dashboard</p>
                     </CardHeader>
                     <CardContent>
                         <Button
@@ -87,14 +87,14 @@ export default function Dashboard() {
     // Case 2: Logged In but Not Linked
     if (user && !currentRoomie) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-black p-4">
-                <Card className="w-full max-w-md bg-white/5 border-white/10">
+            <div className="min-h-screen flex items-center justify-center bg-sunset p-4">
+                <Card className="w-full max-w-md glass-card border-white/10">
                     <CardHeader className="text-center">
                         <div className="mx-auto w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-orange-500/20">
                             <UserCircle2 className="w-8 h-8 text-white" />
                         </div>
                         <CardTitle className="text-2xl font-bold text-white">¡Casi listo!</CardTitle>
-                        <CardDescription className="text-gray-400">
+                        <CardDescription className="text-gray-200">
                             Para continuar, identifica quién eres en el departamento.
                         </CardDescription>
                     </CardHeader>

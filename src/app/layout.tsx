@@ -53,13 +53,19 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body
-        className={`${outfit.variable} ${inter.variable} antialiased bg-black text-white`}
+        className={`${outfit.variable} ${inter.variable} antialiased bg-background text-foreground relative overflow-x-hidden`}
       >
+        {/* Ambient Background Glow */}
+        <div className="fixed inset-0 pointer-events-none z-[-1]">
+          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-900/20 rounded-full blur-[120px]" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-pink-900/20 rounded-full blur-[120px]" />
+        </div>
+
         <PWARegister />
         <QueryProvider>
           <AuthProvider>
             <Navigation />
-            <main className="container mx-auto px-4 py-6 md:py-12 min-h-screen">
+            <main className="container mx-auto px-4 py-6 md:py-12 min-h-screen relative z-10">
               {children}
             </main>
             <Toaster position="top-center" theme="dark" />
