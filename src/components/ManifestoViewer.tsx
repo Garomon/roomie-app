@@ -59,22 +59,16 @@ export default function ManifestoViewer() {
                     </div>
 
                     <div className="space-y-4">
-                        <h3 className="font-bold text-white">A. El &apos;Boss&apos; del Mes (Rotación del Consolidador)</h3>
+                        <h3 className="font-bold text-white">A. El &apos;Boss&apos; del Mes (Protocolo Dinámico)</h3>
                         <ul className="list-decimal list-inside space-y-2 text-gray-300 pl-2">
-                            <li><strong>Rotación:</strong> Ser el Boss significa que te toca juntar la lana ($32,000.00 MXN) de la renta y los servicios. La responsabilidad rota una vez cada tres meses por persona.</li>
+                            <li><strong>Flexibilidad:</strong> El sistema permite dos modos: <em>Rotación Automática</em> (lo estándar) o <em>Boss Fijo</em> (si alguien quiere aventarse el tiro por más tiempo). Esto se configura democráticamente en la App.</li>
+                            <li><strong>Rotación:</strong> En modo rotación, ser el Boss significa que te toca juntar la lana ($32,000.00 MXN) de la renta y los servicios. La responsabilidad rota mensualmente.</li>
                             <li><strong>Deadline:</strong> El Boss del Mes debe asegurar que el pago total llegue al Arrendador el Día 1 de cada mes (No se puede fallar!).</li>
                             <li><strong>Ciclo de Rotación Fijo:</strong> Este es el calendario para el rol de Boss. El ciclo empieza con Alejandro:
                                 <ul className="list-disc list-inside pl-6 mt-1 space-y-1 text-sm">
                                     <li>Alejandro Dorantes: Meses 1, 4, 7, 10...</li>
                                     <li>Edgardo Montoya: Meses 2, 5, 8, 11...</li>
                                     <li>James Kennedy: Meses 3, 6, 9, 12...</li>
-                                </ul>
-                            </li>
-                            <li><strong>Orden de Inicio Oficial:</strong>
-                                <ul className="list-disc list-inside pl-6 mt-1 space-y-1 text-sm">
-                                    <li>Mes 1: Alejandro Dorantes</li>
-                                    <li>Mes 2: Edgardo Montoya</li>
-                                    <li>Mes 3: James Kennedy</li>
                                 </ul>
                             </li>
                         </ul>

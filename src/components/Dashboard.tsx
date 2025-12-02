@@ -16,7 +16,7 @@ import ActivityFeed from "@/components/ActivityFeed";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
 import { useRoomies } from "@/hooks/useRoomies";
-
+import { useBoss } from "@/hooks/useBoss";
 import { useFinancials } from "@/hooks/useFinancials";
 
 export default function Dashboard() {
