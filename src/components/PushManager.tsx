@@ -72,6 +72,31 @@ export default function PushManager() {
 
     if (!roomie) return null;
 
+    const testNotification = async () => {
+        if (!roomie) return;
+        toast.info("Enviando notificación de prueba...");
+        try {
+            const res = await fetch("/api/push/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    roomieId: roomie.id,
+                    title: "Prueba de Sistema 🔔",
+                    message: "¡El sistema de notificaciones está activo y funcionando!",
+                    url: "/"
+                })
+            });
+            if (res.ok) {
+                toast.success("Notificación enviada. Revisa tu barra de estado.");
+            } else {
+                throw new Error("Error al enviar");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Error al probar notificación");
+        }
+    };
+
     const resetSubscription = async () => {
         if (confirm("Esto reiniciará el sistema de notificaciones. ¿Continuar?")) {
             try {
@@ -93,6 +118,16 @@ export default function PushManager() {
                 <Button variant="ghost" size="icon" className="text-cyan-400" disabled>
                     <BellRing className="w-5 h-5" />
                 </Button>
+
+                {/* Test Button */}
+                <button
+                    onClick={testNotification}
+                    className="text-[10px] text-cyan-500 hover:text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded"
+                    title="Probar notificación"
+                >
+                    Test
+                </button>
+
                 {/* Hidden reset for debugging */}
                 <button onClick={resetSubscription} className="text-[10px] text-gray-700 hover:text-red-500">
                     (Reset)
