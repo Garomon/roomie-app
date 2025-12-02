@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ROOMIES, getBossOfTheMonth } from "@/lib/bossLogic";
 import { DollarSign, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -60,6 +60,15 @@ export default function FinanceTracker() {
         toast.success("Reporte descargado");
     };
 
+    const fetchPayments = useCallback(async () => {
+        try {
+            const { data } = await supabase.from('payments').select('*');
+            if (data) setPayments(data as Payment[]);
+        } catch (error) {
+            console.error("Error fetching payments", error);
+        }
+    }, []);
+
     useEffect(() => {
         fetchPayments();
         setBoss(getBossOfTheMonth());
@@ -79,16 +88,7 @@ export default function FinanceTracker() {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, []);
-
-    const fetchPayments = async () => {
-        try {
-            const { data } = await supabase.from('payments').select('*');
-            if (data) setPayments(data as Payment[]);
-        } catch (error) {
-            console.error("Error fetching payments", error);
-        }
-    };
+    }, [fetchPayments]);
 
     const [receiptUrl, setReceiptUrl] = useState("");
 

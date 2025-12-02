@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { ROOMIES } from "@/lib/bossLogic";
-import { Trash2, CheckCircle2, AlertCircle, Utensils, Sparkles, Calendar, User, Filter, Bell } from "lucide-react";
+import { Trash2, CheckCircle2, AlertCircle, Utensils, Sparkles, Calendar, User, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,8 +12,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Chore } from "@/types";
 import { useAuth } from "@/components/AuthProvider";
 import ChoreForm from "@/components/ChoreForm";
-import { formatDistanceToNow } from "date-fns";
-import { es } from "date-fns/locale";
 import { toast } from "sonner";
 
 export default function ChoresTracker() {
@@ -102,7 +100,7 @@ export default function ChoresTracker() {
 
       // Handle Recurring Logic
       if (newCompletedStatus && chore.recurring && chore.recurring !== 'none') {
-        let newDueDate = new Date();
+        const newDueDate = new Date();
         // If it had a due date, base next one on that? Or on today?
         // Usually better to base on today (completion date) to avoid stacking overdue tasks, 
         // OR base on original due date to keep schedule strict.

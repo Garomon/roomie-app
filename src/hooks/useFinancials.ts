@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { Roomie } from "@/types";
 
@@ -27,7 +27,7 @@ export function useFinancials(currentRoomie: Roomie | null) {
         error: null
     });
 
-    const fetchFinancials = async () => {
+    const fetchFinancials = useCallback(async () => {
         if (!currentRoomie) return;
 
         try {
@@ -110,7 +110,7 @@ export function useFinancials(currentRoomie: Roomie | null) {
             console.error("Error fetching financials:", error);
             setData(prev => ({ ...prev, loading: false, error: error.message }));
         }
-    };
+    }, [currentRoomie]);
 
     useEffect(() => {
         if (currentRoomie) {
@@ -135,7 +135,8 @@ export function useFinancials(currentRoomie: Roomie | null) {
             // If no roomie is logged in, we are not loading financials
             setData(prev => ({ ...prev, loading: false }));
         }
-    }, [currentRoomie?.id]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentRoomie?.id, fetchFinancials]);
 
     return { ...data, refresh: fetchFinancials };
 }

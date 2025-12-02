@@ -46,6 +46,7 @@ export default function Dashboard() {
         const rent = getDaysUntilRentDue();
         setRentInfo(rent);
         setMounted(true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (authLoading || bossLoading || (user && financialsLoading) || !mounted) {
