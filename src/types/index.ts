@@ -55,3 +55,23 @@ export interface ExpenseSplit {
     amount: number;
     is_paid: boolean;
 }
+
+// Roomie Status Types (v5.0)
+export type StatusType = 'available' | 'busy' | 'dnd' | 'lady_alert';
+
+export interface RoomieStatus {
+    id: string;
+    roomie_id: string;
+    status: StatusType;
+    message?: string;
+    updated_at: string;
+}
+
+export interface StatusOption {
+    id: StatusType;
+    label: string;
+    emoji: string;
+    color: string;
+    description: string;
+}
+

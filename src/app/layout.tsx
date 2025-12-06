@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/AuthProvider";
 import { QueryProvider } from "@/components/QueryProvider";
 import { APP_CONFIG } from "@/lib/appConfig";
+import RoomieStatusFAB from "@/components/RoomieStatusFAB";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -69,6 +70,7 @@ export default function RootLayout({
               {children}
             </main>
             <Toaster position="top-center" theme="dark" />
+            <RoomieStatusFAB />
           </AuthProvider>
         </QueryProvider>
       </body>

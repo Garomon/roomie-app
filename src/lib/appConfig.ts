@@ -1,6 +1,6 @@
 export const APP_CONFIG = {
     launchDate: "25 de Noviembre de 2025",
-    appVersion: "v4.1",
+    appVersion: "v5.0",
     roomies: [
         {
             id: "edgardo",
@@ -46,7 +46,13 @@ export const APP_CONFIG = {
         { month: 10, roomieId: "alejandro" },
         { month: 11, roomieId: "edgardo" },
         { month: 12, roomieId: "james" }
-    ]
+    ],
+    statusOptions: [
+        { id: 'available', label: 'Disponible', emoji: '🟢', color: 'bg-green-500', description: 'Libre para cualquier cosa' },
+        { id: 'lady_alert', label: 'Lady Alert', emoji: '🔴', color: 'bg-red-500', description: 'No molestar, tengo visita 😏' },
+        { id: 'busy', label: 'Ocupado', emoji: '🟡', color: 'bg-yellow-500', description: 'Trabajando o concentrado' },
+        { id: 'dnd', label: 'No Molestar', emoji: '⚫', color: 'bg-gray-600', description: 'Silencio total pls' },
+    ] as const
 };
 
 export const formatCurrency = (amount: number) => {

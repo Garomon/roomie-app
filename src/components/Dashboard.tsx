@@ -20,6 +20,9 @@ import { useBoss } from "@/hooks/useBoss";
 import { useFinancials } from "@/hooks/useFinancials";
 import { APP_CONFIG } from "@/lib/appConfig";
 import SettingsModal from "@/components/SettingsModal";
+import RoomieStatusBadge from "@/components/RoomieStatusBadge"; // Keeping for compatibility or cleanup later
+import { useRoomieStatus } from "@/hooks/useRoomieStatus";
+import RoomieStatusCard from "@/components/RoomieStatusCard";
 
 export default function Dashboard() {
     const { currentBoss: boss, loading: bossLoading } = useBoss();
@@ -230,6 +233,19 @@ export default function Dashboard() {
                                     </svg>
                                 </div>
                             )}
+                        </div>
+
+                        {/* Status Section */}
+                        <div className="mt-8 pt-6 border-t border-white/10">
+                            <p className="text-xs text-gray-400 mb-4 uppercase tracking-wider font-semibold flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                                Vibra del Depa
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                {ROOMIES.map(r => (
+                                    <RoomieStatusCard key={r.id} roomie={r} currentUserId={currentRoomie?.id} />
+                                ))}
+                            </div>
                         </div>
                     </div>
 
