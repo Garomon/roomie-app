@@ -41,6 +41,7 @@ export const viewport = {
 };
 
 import PWARegister from "@/components/PWARegister";
+import NoiseTexture from "@/components/ui/NoiseTexture";
 
 export default function RootLayout({
   children,
@@ -57,16 +58,24 @@ export default function RootLayout({
         className={`${outfit.variable} ${inter.variable} antialiased bg-background text-foreground relative overflow-x-hidden`}
       >
         {/* Ambient Background Glow */}
-        <div className="fixed inset-0 pointer-events-none z-[-1]">
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-900/20 rounded-full blur-[120px]" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-pink-900/20 rounded-full blur-[120px]" />
+        {/* Premium Ambient Background */}
+        <div className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
+          {/* Deep Base Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0a0a12] to-[#110c1d]" />
+
+          {/* Neon Glow Orbs */}
+          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-purple-600/10 rounded-full blur-[150px] animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-pink-600/10 rounded-full blur-[150px] animate-pulse" />
+          <div className="absolute top-[40%] left-[50%] translate-x-[-50%] w-[40%] h-[40%] bg-cyan-600/5 rounded-full blur-[120px]" />
+
+          <NoiseTexture />
         </div>
 
         <PWARegister />
         <QueryProvider>
           <AuthProvider>
             <Navigation />
-            <main className="container mx-auto px-4 py-6 md:py-12 min-h-screen relative z-10">
+            <main className="container mx-auto px-4 py-8 pt-28 md:pt-32 min-h-screen relative z-10">
               {children}
             </main>
             <Toaster position="top-center" theme="dark" />
