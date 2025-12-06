@@ -22,6 +22,7 @@ import NotificationsCenter from "@/components/NotificationsCenter";
 import { SearchCommand } from "@/components/SearchCommand";
 import InstallPWA from "@/components/InstallPWA";
 import PushManager from "@/components/PushManager";
+import { motion } from "framer-motion";
 
 export default function Navigation() {
     const { roomie } = useAuth();
@@ -62,30 +63,35 @@ export default function Navigation() {
                                 const Icon = route.icon;
                                 const isActive = pathname === route.href;
                                 return (
-                                    <Link
+                                    <motion.div
                                         key={route.href}
-                                        href={route.href}
-                                        className={cn(
-                                            "flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-300 relative overflow-hidden group",
-                                            isActive
-                                                ? "text-white"
-                                                : "text-gray-400 hover:text-white"
-                                        )}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
                                     >
-                                        {/* Active/Hover Background */}
-                                        <div className={cn(
-                                            "absolute inset-0 bg-white/5 opacity-0 transition-opacity duration-300",
-                                            isActive ? "opacity-100" : "group-hover:opacity-100"
-                                        )} />
+                                        <Link
+                                            href={route.href}
+                                            className={cn(
+                                                "flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-300 relative overflow-hidden group",
+                                                isActive
+                                                    ? "text-white"
+                                                    : "text-gray-400 hover:text-white"
+                                            )}
+                                        >
+                                            {/* Active/Hover Background */}
+                                            <div className={cn(
+                                                "absolute inset-0 bg-white/5 opacity-0 transition-opacity duration-300",
+                                                isActive ? "opacity-100" : "group-hover:opacity-100"
+                                            )} />
 
-                                        {/* Active Indicator Line */}
-                                        {isActive && (
-                                            <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full" />
-                                        )}
+                                            {/* Active Indicator Line */}
+                                            {isActive && (
+                                                <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full" />
+                                            )}
 
-                                        <Icon className={cn("h-4 w-4 relative z-10", isActive && "text-cyan-400")} />
-                                        <span className="relative z-10">{route.label}</span>
-                                    </Link>
+                                            <Icon className={cn("h-4 w-4 relative z-10", isActive && "text-cyan-400")} />
+                                            <span className="relative z-10">{route.label}</span>
+                                        </Link>
+                                    </motion.div>
                                 );
                             })}
                         </div>

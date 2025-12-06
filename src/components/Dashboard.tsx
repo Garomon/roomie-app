@@ -236,21 +236,6 @@ export default function Dashboard() {
                         </div>
 
                         {/* Status Section */}
-                        <div className="mt-8 pt-6 border-t border-white/10">
-                            <p className="text-xs text-gray-400 mb-4 uppercase tracking-wider font-semibold flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-                                Vibra del Depa
-                            </p>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                {ROOMIES.map(r => (
-                                    <RoomieStatusCard key={r.id} roomie={r} currentUserId={currentRoomie?.id} />
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Boss Card */}
-                    <div className="glass-card rounded-2xl p-6 w-full md:w-auto min-w-[300px] border-l-4 border-l-purple-500 relative">
                         <div className="absolute top-2 right-2">
                             <SettingsModal />
                         </div>
@@ -285,6 +270,18 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
+            </motion.div>
+
+            {/* Roomie Status Grid */}
+            <motion.div
+                variants={container}
+                className="grid grid-cols-2 md:grid-cols-4 gap-4"
+            >
+                {ROOMIES.map((r) => (
+                    <motion.div key={r.id} variants={item}>
+                        <RoomieStatusCard roomie={r} />
+                    </motion.div>
+                ))}
             </motion.div>
 
             {/* Stats Grid */}
